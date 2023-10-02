@@ -51,10 +51,7 @@ func makeIDSRVCookies(client *http.Client, username string, password string, aut
 	if err != nil {
 		return err
 	}
-	err = resp.Body.Close()
-	if err != nil {
-		return err
-	}
+	defer resp.Body.Close()
 	for _, cookie := range resp.Cookies() {
 		fmt.Println(cookie)
 	}
