@@ -19,6 +19,6 @@ func main() {
 	password := os.Getenv("PASSWORD")
 	err = stine.GetSession(username, password)
 	if err != nil {
-		log.Fatal("Unable to create STiNE session")
+		log.Fatal(fmt.Sprintf("Unable to create STiNE session: %s", err))
 	}
 }

@@ -52,6 +52,9 @@ func makeIDSRVCookies(client *http.Client, username string, password string, aut
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("authentication with username/password failed")
+	}
 	for _, cookie := range resp.Cookies() {
 		fmt.Println(cookie)
 	}
