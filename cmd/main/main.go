@@ -15,8 +15,8 @@ func main() {
 		log.Fatal("Unable to load .env file")
 	}
 
-	username := os.Getenv("USERNAME")
-	password := os.Getenv("PASSWORD")
+	username := os.Getenv("STINE_USERNAME")
+	password := os.Getenv("STINE_PASSWORD")
 	err = stine.GetSession(username, password)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Unable to create STiNE session: %s", err))
