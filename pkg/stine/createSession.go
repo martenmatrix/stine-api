@@ -25,19 +25,18 @@ func getAuthenticationToken(response *http.Response) (string, error) {
 	return authToken, nil
 }
 
-func makeAntiforgeryCookie(client *http.Client) error {
+func makeAntiforgeryCookieAndGetAuthToken(client *http.Client) (string, error) {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login?ReturnUrl=%2FIdentityServer%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3DClassicWeb%26scope%3Dopenid%2520DSF%26response_mode%3Dquery%26response_type%3Dcode%26nonce%3DkQEKs7lCwN2CEXvCDeD1Zw%253D%253D%26redirect_uri%3Dhttps%253A%252F%252Fstine.uni-hamburg.de%252Fscripts%252Fmgrqispi.dll%253FAPPNAME%253DCampusNet%2526PRGNAME%253DLOGINCHECK%2526ARGUMENTS%253D-N000000000000001,ids_mode%2526ids_mode%253DY"
 	resp, getError := client.Get(reqURL)
 	if getError != nil {
-		return getError
+		return "", getError
 	}
 	defer resp.Body.Close()
 	authToken, tokenError := getAuthenticationToken(resp)
 	if tokenError != nil {
-		return tokenError
+		return "", tokenError
 	}
-	fmt.Println(authToken)
-	return nil
+	return authToken, nil
 }
 
 func makeIDSRVCookies(client *http.Client, username string, password string) error {
@@ -63,9 +62,9 @@ func makeIDSRVCookies(client *http.Client, username string, password string) err
 
 func GetSession(username string, password string) error {
 	client := getClient()
-	antiForgeryError := makeAntiforgeryCookie(client)
-	if antiForgeryError != nil {
-		return antiForgeryError
+	authToken, antiForgeryAuthError := makeAntiforgeryCookieAndGetAuthToken(client)
+	if antiForgeryAuthError != nil {
+		return antiForgeryAuthError
 	}
 	idsrvError := makeIDSRVCookies(client, username, password)
 	if idsrvError != nil {
