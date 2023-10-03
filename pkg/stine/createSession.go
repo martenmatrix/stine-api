@@ -114,21 +114,16 @@ func getSTINEAuthURL(client *http.Client) (string, error) {
 	return authURL, nil
 }
 
-func makeCNSCCookieAndGetLocationURL(client *http.Client) (string, error) {
-	authURL, authURLErr := getSTINEAuthURL(client)
-	if authURLErr != nil {
-		return "", authURLErr
-	}
-	resp, getErr := client.Get(authURL)
-	if getErr != nil {
-		return "", getErr
-	}
-	defer resp.Body.Close()
-	refreshHeader := resp.Header.Get("Refresh")
-	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
-	path := refreshHeader[indexOfFirstEquals+1:]
-	homePageURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", path)
-	return homePageURL, nil
+func getHomepageRedirect(authResp *http.Response) string {
+	redirectPathHeader := authResp.Header.Get("Refresh")
+	indexOfFirstEquals := strings.IndexByte(redirectPathHeader, '=')
+	redirectPath := redirectPathHeader[indexOfFirstEquals+1:]
+	redirectURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", redirectPath)
+	return redirectURL
+}
+
+func getCNSCCookie(authResp *http.Response) *http.Cookie {
+	return authResp.Cookies()[0]
 }
 
 type name struct {
@@ -143,6 +138,7 @@ func GetSession(username string, password string) (Session, error) {
 	if authPageResErr != nil {
 		return Session{}, authPageResErr
 	}
+
 	antiForgeryCookie := getAntiforgeryCookie(authPageRes)
 	authToken, authTokenErr := getAuthenticationToken(authPageRes)
 	authPageRes.Body.Close()
@@ -150,23 +146,26 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, authTokenErr
 	}
 
-	_, idsrvError := getIdsrvCookies(client, username, password, authToken, antiForgeryCookie)
+	idsrvCookies, idsrvError := getIdsrvCookies(client, username, password, authToken, antiForgeryCookie)
 	if idsrvError != nil {
 		return Session{}, idsrvError
 	}
-	homepageURL, csncErr := makeCNSCCookieAndGetLocationURL(client)
-	if csncErr != nil {
-		return Session{}, csncErr
+
+	stineAuthURL, stineAuthURLErr := getSTINEAuthURL(client)
+	if stineAuthURL != nil {
+		return Session{}, stineAuthURLErr
 	}
-	fmt.Println(homepageURL)
-	name, nameError := getName(Session{
-		client:      client,
-		homepageURL: homepageURL,
-	})
-	if nameError != nil {
-		return Session{}, nameError
+
+	authRes, authResErr := client.Get(stineAuthURL)
+	if authResErr != nil {
+		return Session{}, authResErr
 	}
-	fmt.Println(name)
+	defer authReq.Body.Close()
+	homepageRedirect := getHomepageRedirect(authRes)
+	cnscCookie := getCNSCCookie(authRes)
+
+	fmt.Println(homepageRedirect, cnscCookie)
+
 	return Session{
 		client:      client,
 		homepageURL: homepageURL,
