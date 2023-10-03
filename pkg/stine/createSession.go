@@ -4,10 +4,35 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 )
+
+type Session struct {
+	client      *http.Client
+	homepageURL string
+}
+
+func logResponse(response *http.Response) {
+	resDump, err := httputil.DumpResponse(response, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("RESPONSE:\n%s", string(resDump))
+}
+
+func logRequest(request *http.Request) {
+	reqDump, err := httputil.DumpRequest(request, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("REQUEST:\n%s", string(reqDump))
+}
 
 func getAuthenticationToken(response *http.Response) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(response.Body)
@@ -103,20 +128,48 @@ func makeCNSCCookieAndGetLocationURL(client *http.Client) (string, error) {
 	return homePageURL, nil
 }
 
-func GetSession(username string, password string) error {
+type name struct {
+	name    string
+	surname string
+}
+
+func getName(session Session) (name, error) {
+	req, err := http.NewRequest("GET", session.homepageURL, nil)
+	logRequest(req)
+	resp, err := session.client.Do(req)
+	if err != nil {
+		return name{}, err
+	}
+	defer resp.Body.Close()
+	logResponse(resp)
+	return name{}, nil
+}
+
+func GetSession(username string, password string) (Session, error) {
 	client := getClient()
 	authToken, antiForgeryAuthError := makeAntiforgeryCookieAndGetAuthToken(client)
 	if antiForgeryAuthError != nil {
-		return antiForgeryAuthError
+		return Session{}, antiForgeryAuthError
 	}
 	idsrvError := makeIDSRVCookies(client, username, password, authToken)
 	if idsrvError != nil {
-		return idsrvError
+		return Session{}, idsrvError
 	}
 	homepageURL, csncErr := makeCNSCCookieAndGetLocationURL(client)
 	if csncErr != nil {
-		return csncErr
+		return Session{}, csncErr
 	}
 	fmt.Println(homepageURL)
-	return nil
+	name, nameError := getName(Session{
+		client:      client,
+		homepageURL: homepageURL,
+	})
+	if nameError != nil {
+		return Session{}, nameError
+	}
+	fmt.Println(name)
+	return Session{
+		client:      client,
+		homepageURL: homepageURL,
+	}, nil
 }
