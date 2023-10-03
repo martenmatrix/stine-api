@@ -136,16 +136,6 @@ type name struct {
 	surname string
 }
 
-func getName(session Session) (name, error) {
-	req, err := http.NewRequest("GET", session.homepageURL, nil)
-	resp, err := session.client.Do(req)
-	if err != nil {
-		return name{}, err
-	}
-	defer resp.Body.Close()
-	return name{}, nil
-}
-
 func GetSession(username string, password string) (Session, error) {
 	client := getClient()
 
