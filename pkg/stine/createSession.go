@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func getAuthenticationToken(response *http.Response) (string, error) {
@@ -65,6 +66,43 @@ func makeIDSRVCookies(client *http.Client, username string, password string, aut
 	return nil
 }
 
+func getSTINEAuthURL(client *http.Client) (string, error) {
+	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
+	resp, err := client.Get(reqURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	authURL, onPage := doc.Find("#logIn_btn").First().Attr("href")
+	if !onPage {
+		return "", errors.New("unable to find login button on STiNE page")
+	}
+
+	return authURL, nil
+}
+
+func makeCNSCCookieAndGetLocationURL(client *http.Client) (string, error) {
+	authURL, authURLErr := getSTINEAuthURL(client)
+	if authURLErr != nil {
+		return "", authURLErr
+	}
+	resp, getErr := client.Get(authURL)
+	if getErr != nil {
+		return "", getErr
+	}
+	defer resp.Body.Close()
+	refreshHeader := resp.Header.Get("Refresh")
+	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
+	path := refreshHeader[indexOfFirstEquals+1:]
+	homePageURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", path)
+	return homePageURL, nil
+}
+
 func GetSession(username string, password string) error {
 	client := getClient()
 	authToken, antiForgeryAuthError := makeAntiforgeryCookieAndGetAuthToken(client)
@@ -75,5 +113,10 @@ func GetSession(username string, password string) error {
 	if idsrvError != nil {
 		return idsrvError
 	}
+	homepageURL, csncErr := makeCNSCCookieAndGetLocationURL(client)
+	if csncErr != nil {
+		return csncErr
+	}
+	fmt.Println(homepageURL)
 	return nil
 }
