@@ -59,9 +59,9 @@ type idsrvCookies struct {
 	idsrvSession *http.Cookie
 }
 
-func getIdsrvCookies(client *http.Client, username string, password string, authToken string) (idsrvCookies, error) {
+func getIdsrvCookies(client *http.Client, username string, password string, authToken string, antiForgeryCookie *http.Cookie) (idsrvCookies, error) {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
-	formData := url.Values{
+	formQuery := url.Values{
 		"ReturnUrl":                  {},
 		"CancelUrl":                  {},
 		"Username":                   {username},
@@ -70,16 +70,28 @@ func getIdsrvCookies(client *http.Client, username string, password string, auth
 		"button":                     {"login"},
 		"__RequestVerificationToken": {authToken},
 	}
-	resp, err := client.PostForm(reqURL, formData)
-	if err != nil {
-		return idsrvCookies{}, err
+	req, reqErr := http.NewRequest("POST", reqURL, strings.NewReader(formQuery.Encode()))
+	if reqErr != nil {
+		return idsrvCookies{}, reqErr
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(antiForgeryCookie)
+	res, resErr := client.Do(req)
+	if resErr != nil {
+		return idsrvCookies{}, resErr
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
 		return idsrvCookies{}, errors.New("authentication with username/password failed")
 	}
-	fmt.Println(resp.Cookies())
-	return idsrvCookies{}, nil
+	firstRedirectRes := res.Request.Response
+	sessionCookies := firstRedirectRes.Cookies()
+
+	return idsrvCookies{
+		idsrv:        sessionCookies[1],
+		idsrvSession: sessionCookies[0],
+	}, nil
 }
 
 func getSTINEAuthURL(client *http.Client) (string, error) {
@@ -126,13 +138,11 @@ type name struct {
 
 func getName(session Session) (name, error) {
 	req, err := http.NewRequest("GET", session.homepageURL, nil)
-	logRequest(req)
 	resp, err := session.client.Do(req)
 	if err != nil {
 		return name{}, err
 	}
 	defer resp.Body.Close()
-	logResponse(resp)
 	return name{}, nil
 }
 
@@ -150,7 +160,7 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, authTokenErr
 	}
 
-	_, idsrvError := getIdsrvCookies(client, username, password, authToken)
+	_, idsrvError := getIdsrvCookies(client, username, password, authToken, antiForgeryCookie)
 	if idsrvError != nil {
 		return Session{}, idsrvError
 	}
