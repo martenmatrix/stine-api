@@ -91,6 +91,8 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	return &http.Cookie{
 		Name:     "cnsc",
 		Value:    cookieWithoutAttributes,
+		Domain:   "stine.uni-hamburg.de",
+		Path:     "/scripts",
 		HttpOnly: true,
 	}
 }
@@ -129,11 +131,13 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	}
 
 	cnscCookie := getMalformattedCnscCookie(res)
-	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/")
+	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/scripts")
 	if stineURLErr != nil {
 		return "", stineURLErr
 	}
 	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
+
+	client.Jar.Cookies(stineURL)
 
 	homepageURL := getRedirectFromRefreshHeader(res.Header)
 	return homepageURL, nil
@@ -168,5 +172,17 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, idsrvError
 	}
 
-	return Session{}, nil
+	req1, _ := http.NewRequest("GET", homepageURL, nil)
+	logRequest(req1)
+	res1, err2 := client.Do(req1)
+	if err2 != nil {
+		return Session{}, authPageResErr
+	}
+	defer res1.Body.Close()
+	logResponse(res1)
+
+	return Session{
+		client:      client,
+		homepageURL: homepageURL,
+	}, nil
 }
