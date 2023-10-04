@@ -34,10 +34,6 @@ func logRequest(request *http.Request) {
 	fmt.Printf("REQUEST:\n%s", string(reqDump))
 }
 
-func getAntiforgeryCookie(authPageRes *http.Response) *http.Cookie {
-	return authPageRes.Cookies()[0]
-}
-
 func getAuthenticationToken(authPageRes *http.Response) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(authPageRes.Body)
 	if err != nil {
@@ -65,12 +61,8 @@ func getReturnURL(authPageRes *http.Response) (string, error) {
 	return decodedStr, nil
 }
 
-type idsrvCookies struct {
-	idsrv        *http.Cookie
-	idsrvSession *http.Cookie
-}
-
-func getIdsrvCookies(client *http.Client, returnURL string, username string, password string, authToken string, antiForgeryCookie *http.Cookie) (idsrvCookies, error) {
+// creates idsrv, idsrv.session and cnsc cookie in jar
+func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) error {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
 		"ReturnUrl":                  {returnURL},
@@ -83,45 +75,20 @@ func getIdsrvCookies(client *http.Client, returnURL string, username string, pas
 	}
 	req, reqErr := http.NewRequest("POST", reqURL, strings.NewReader(formQuery.Encode()))
 	if reqErr != nil {
-		return idsrvCookies{}, reqErr
+		return reqErr
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.AddCookie(antiForgeryCookie)
 	res, resErr := client.Do(req)
 	if resErr != nil {
-		return idsrvCookies{}, resErr
+		return resErr
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return idsrvCookies{}, errors.New("authentication with username/password failed")
+		return errors.New("authentication with username/password failed")
 	}
-	firstRedirectRes := res.Request.Response.Request.Response
-	sessionCookies := firstRedirectRes.Cookies()
 
-	return idsrvCookies{
-		idsrv:        sessionCookies[1],
-		idsrvSession: sessionCookies[0],
-	}, nil
-}
-
-func refreshIDSRVCookies(client *http.Client, returnURL string, antiForgeryCookie *http.Cookie, idsrv idsrvCookies) (idsrvCookies, error) {
-	req, reqErr := http.NewRequest("GET", "https://cndsf.ad.uni-hamburg.de"+returnURL, nil)
-	if reqErr != nil {
-		return idsrvCookies{}, reqErr
-	}
-	req.AddCookie(antiForgeryCookie)
-	req.AddCookie(idsrv.idsrv)
-	req.AddCookie(idsrv.idsrvSession)
-	res, resErr := client.Do(req)
-	if resErr != nil {
-		return idsrvCookies{}, resErr
-	}
-	defer res.Body.Close()
-	return idsrvCookies{
-		idsrv:        res.Cookies()[0],
-		idsrvSession: idsrv.idsrvSession,
-	}, nil
+	return nil
 }
 
 func getSTINEAuthURL(client *http.Client) (string, error) {
@@ -152,14 +119,11 @@ func getRedirectFromRefreshHeader(header http.Header) string {
 	return redirectURL
 }
 
-func createHomepageRedirectRequest(authURL string, sessionCookies idsrvCookies, antiForgeryCookie *http.Cookie) (*http.Request, error) {
+func createHomepageRedirectRequest(authURL string, sessionCookies string, antiForgeryCookie *http.Cookie) (*http.Request, error) {
 	req, reqErr := http.NewRequest("GET", authURL, nil)
 	if reqErr != nil {
 		return nil, reqErr
 	}
-	req.AddCookie(antiForgeryCookie)
-	req.AddCookie(sessionCookies.idsrv)
-	req.AddCookie(sessionCookies.idsrvSession)
 	return req, nil
 }
 
@@ -190,13 +154,13 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, authURLErr
 	}
 
+	// creates inital antiforgery cookie in jar
 	authPageRes, authPageResErr := client.Get(authURL)
 	if authPageResErr != nil {
 		return Session{}, authPageResErr
 	}
 	defer authPageRes.Body.Close()
 
-	antiForgeryCookie := getAntiforgeryCookie(authPageRes)
 	authToken, authTokenErr := getAuthenticationToken(authPageRes)
 	if authTokenErr != nil {
 		return Session{}, authTokenErr
@@ -206,21 +170,12 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, returnURLErr
 	}
 
-	idsrvCookies, idsrvError := getIdsrvCookies(client, returnURL, username, password, authToken, antiForgeryCookie)
+	idsrvError := makeSessionCookies(client, returnURL, username, password, authToken)
 	if idsrvError != nil {
 		return Session{}, idsrvError
 	}
-	idsrvCookies, refreshIdsrvErr := refreshIDSRVCookies(client, returnURL, antiForgeryCookie, idsrvCookies)
-	if refreshIdsrvErr != nil {
-		return Session{}, refreshIdsrvErr
-	}
 
-	stineAuthURL, stineAuthURLErr := getSTINEAuthURL(client)
-	if stineAuthURLErr != nil {
-		return Session{}, stineAuthURLErr
-	}
-
-	homepageRedirectReq, homepageRedirectReqErr := createHomepageRedirectRequest(stineAuthURL, idsrvCookies, antiForgeryCookie)
+	homepageRedirectReq, homepageRedirectReqErr := createHomepageRedirectRequest("edddw", "f", nil)
 	if homepageRedirectReqErr != nil {
 		return Session{}, homepageRedirectReqErr
 	}
