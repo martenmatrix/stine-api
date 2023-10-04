@@ -73,15 +73,7 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 		"button":                     {"login"},
 		"__RequestVerificationToken": {authToken},
 	}
-	req, reqErr := http.NewRequest("POST", reqURL, strings.NewReader(formQuery.Encode()))
-	if reqErr != nil {
-		return reqErr
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	res, resErr := client.Do(req)
-	if resErr != nil {
-		return resErr
-	}
+	res, resErr := client.PostForm(reqURL, formQuery)
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
