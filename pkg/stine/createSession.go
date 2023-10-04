@@ -61,7 +61,22 @@ func getReturnURL(authPageRes *http.Response) (string, error) {
 	return decodedStr, nil
 }
 
+func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
+	setCookieHeader := respWithCookie.Header.Get("Set-Cookie")
+	indexOfFirstEquals := strings.IndexByte(setCookieHeader, '=')
+	cookieWithoutName := setCookieHeader[indexOfFirstEquals+1:]
+	indexOfFirstSemicolon := strings.IndexByte(cookieWithoutName, ';')
+	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon-1]
+
+	return &http.Cookie{
+		Name:     "cnsc",
+		Value:    cookieWithoutAttributes,
+		HttpOnly: true,
+	}
+}
+
 // creates idsrv, idsrv.session and cnsc cookie in jar
+// the cnsc cookie needs to be added manually to the jar because the server sents it malformatted
 func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) error {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
@@ -82,6 +97,13 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	if res.StatusCode != http.StatusOK {
 		return errors.New("authentication with username/password failed")
 	}
+
+	cnscCookie := getMalformattedCnscCookie(res)
+	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/")
+	if stineURLErr != nil {
+		return stineURLErr
+	}
+	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
 	return nil
 }
@@ -120,20 +142,6 @@ func createHomepageRedirectRequest(authURL string, sessionCookies string, antiFo
 		return nil, reqErr
 	}
 	return req, nil
-}
-
-func getMalformattedCnscCookie(homepageRedirectRes *http.Response) *http.Cookie {
-	setCookieHeader := homepageRedirectRes.Header.Get("Set-Cookie")
-	indexOfFirstEquals := strings.IndexByte(setCookieHeader, '=')
-	cookieWithoutName := setCookieHeader[indexOfFirstEquals+1:]
-	indexOfFirstSemicolon := strings.IndexByte(cookieWithoutName, ';')
-	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon-1]
-
-	return &http.Cookie{
-		Name:     "cnsc",
-		Value:    cookieWithoutAttributes,
-		HttpOnly: true,
-	}
 }
 
 type name struct {
