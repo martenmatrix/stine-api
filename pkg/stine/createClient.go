@@ -1,7 +1,10 @@
 package stine
 
 import (
+	"golang.org/x/net/publicsuffix"
+	"log"
 	"net/http"
+	"net/http/cookiejar"
 )
 
 type myTransport struct{}
@@ -12,7 +15,13 @@ func (t *myTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func getClient() *http.Client {
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &http.Client{
 		Transport: &myTransport{},
+		Jar:       jar,
 	}
 }
