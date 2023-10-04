@@ -54,6 +54,17 @@ func getAuthenticationToken(authPageRes *http.Response) (string, error) {
 	return authToken, nil
 }
 
+func getReturnURL(authPageRes *http.Response) (string, error) {
+	returnUrl := authPageRes.Request.URL.RawQuery
+	indexOfFirstEquals := strings.IndexByte(returnUrl, '=')
+	returnURLWithoutName := returnUrl[indexOfFirstEquals+1:]
+	decodedStr, err := url.QueryUnescape(returnURLWithoutName)
+	if err != nil {
+		return "", err
+	}
+	return decodedStr, nil
+}
+
 type idsrvCookies struct {
 	idsrv        *http.Cookie
 	idsrvSession *http.Cookie
@@ -187,9 +198,12 @@ func GetSession(username string, password string) (Session, error) {
 
 	antiForgeryCookie := getAntiforgeryCookie(authPageRes)
 	authToken, authTokenErr := getAuthenticationToken(authPageRes)
-	returnURL := authPageRes.Request.URL.RawQuery
 	if authTokenErr != nil {
 		return Session{}, authTokenErr
+	}
+	returnURL, returnURLErr := getReturnURL(authPageRes)
+	if returnURLErr != nil {
+		return Session{}, returnURLErr
 	}
 
 	idsrvCookies, idsrvError := getIdsrvCookies(client, returnURL, username, password, authToken, antiForgeryCookie)
