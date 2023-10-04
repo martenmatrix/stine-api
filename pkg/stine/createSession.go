@@ -77,7 +77,9 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sents it malformatted
-func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) error {
+// returns url, which re-directs to homepage, contains sessionId and is made of the following format
+// dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args
+func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) (string, error) {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
 		"ReturnUrl":                  {returnURL},
@@ -90,22 +92,23 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	}
 	res, resErr := client.PostForm(reqURL, formQuery)
 	if resErr != nil {
-		return resErr
+		return "", resErr
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return errors.New("authentication with username/password failed")
+		return "", errors.New("authentication with username/password failed")
 	}
 
 	cnscCookie := getMalformattedCnscCookie(res)
 	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/")
 	if stineURLErr != nil {
-		return stineURLErr
+		return "", stineURLErr
 	}
 	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
-	return nil
+	homepageURL := getRedirectFromRefreshHeader(res.Header)
+	return homepageURL, nil
 }
 
 func getSTINEAuthURL(client *http.Client) (string, error) {
@@ -136,19 +139,6 @@ func getRedirectFromRefreshHeader(header http.Header) string {
 	return redirectURL
 }
 
-func createHomepageRedirectRequest(authURL string, sessionCookies string, antiForgeryCookie *http.Cookie) (*http.Request, error) {
-	req, reqErr := http.NewRequest("GET", authURL, nil)
-	if reqErr != nil {
-		return nil, reqErr
-	}
-	return req, nil
-}
-
-type name struct {
-	name    string
-	surname string
-}
-
 func GetSession(username string, password string) (Session, error) {
 	client := getClient()
 
@@ -173,22 +163,10 @@ func GetSession(username string, password string) (Session, error) {
 		return Session{}, returnURLErr
 	}
 
-	idsrvError := makeSessionCookies(client, returnURL, username, password, authToken)
+	homepageURL, idsrvError := makeSessionCookies(client, returnURL, username, password, authToken)
 	if idsrvError != nil {
 		return Session{}, idsrvError
 	}
-
-	homepageRedirectReq, homepageRedirectReqErr := createHomepageRedirectRequest("edddw", "f", nil)
-	if homepageRedirectReqErr != nil {
-		return Session{}, homepageRedirectReqErr
-	}
-	homepageRedirectRes, homepageRedirectResErr := client.Do(homepageRedirectReq)
-	if homepageRedirectResErr != nil {
-		return Session{}, homepageRedirectResErr
-	}
-	homepageURL := getRedirectFromRefreshHeader(homepageRedirectRes.Header)
-	cnscCookie := getMalformattedCnscCookie(homepageRedirectRes)
-	fmt.Println(homepageURL, cnscCookie)
 
 	return Session{}, nil
 }
