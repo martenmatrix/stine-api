@@ -96,7 +96,7 @@ func getIdsrvCookies(client *http.Client, returnURL string, username string, pas
 	if res.StatusCode != http.StatusOK {
 		return idsrvCookies{}, errors.New("authentication with username/password failed")
 	}
-	firstRedirectRes := res.Request.Response
+	firstRedirectRes := res.Request.Response.Request.Response
 	sessionCookies := firstRedirectRes.Cookies()
 
 	return idsrvCookies{
