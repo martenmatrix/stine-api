@@ -76,7 +76,7 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 }
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
-// the cnsc cookie needs to be added manually to the jar because the server sents it malformatted
+// the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
 // returns url, which re-directs to homepage, contains sessionId and is made of the following format
 // dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args
 func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) (string, error) {
