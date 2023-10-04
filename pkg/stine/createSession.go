@@ -94,6 +94,25 @@ func getIdsrvCookies(client *http.Client, returnURL string, username string, pas
 	}, nil
 }
 
+func refreshIDSRVCookies(client *http.Client, returnURL string, antiForgeryCookie *http.Cookie, idsrv idsrvCookies) (idsrvCookies, error) {
+	req, reqErr := http.NewRequest("GET", "https://cndsf.ad.uni-hamburg.de"+returnURL, nil)
+	if reqErr != nil {
+		return idsrvCookies{}, reqErr
+	}
+	req.AddCookie(antiForgeryCookie)
+	req.AddCookie(idsrv.idsrv)
+	req.AddCookie(idsrv.idsrvSession)
+	res, resErr := client.Do(req)
+	if resErr != nil {
+		return idsrvCookies{}, resErr
+	}
+	defer res.Body.Close()
+	return idsrvCookies{
+		idsrv:        res.Cookies()[0],
+		idsrvSession: idsrv.idsrvSession,
+	}, nil
+}
+
 func getSTINEAuthURL(client *http.Client) (string, error) {
 	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
 	resp, err := client.Get(reqURL)
@@ -176,6 +195,10 @@ func GetSession(username string, password string) (Session, error) {
 	idsrvCookies, idsrvError := getIdsrvCookies(client, returnURL, username, password, authToken, antiForgeryCookie)
 	if idsrvError != nil {
 		return Session{}, idsrvError
+	}
+	idsrvCookies, refreshIdsrvErr := refreshIDSRVCookies(client, returnURL, antiForgeryCookie, idsrvCookies)
+	if refreshIdsrvErr != nil {
+		return Session{}, refreshIdsrvErr
 	}
 
 	stineAuthURL, stineAuthURLErr := getSTINEAuthURL(client)
