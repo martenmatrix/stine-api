@@ -114,16 +114,37 @@ func getSTINEAuthURL(client *http.Client) (string, error) {
 	return authURL, nil
 }
 
-func getHomepageRedirect(authResp *http.Response) string {
-	redirectPathHeader := authResp.Header.Get("Refresh")
-	indexOfFirstEquals := strings.IndexByte(redirectPathHeader, '=')
-	redirectPath := redirectPathHeader[indexOfFirstEquals+1:]
+func getRedirectFromRefreshHeader(header http.Header) string {
+	refreshHeader := header.Get("Refresh")
+	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
+	redirectPath := refreshHeader[indexOfFirstEquals+1:]
 	redirectURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", redirectPath)
 	return redirectURL
 }
 
-func getCNSCCookie(authResp *http.Response) *http.Cookie {
-	return authResp.Cookies()[0]
+func createHomepageRedirectRequest(authURL string, sessionCookies idsrvCookies, antiForgeryCookie *http.Cookie) (*http.Request, error) {
+	req, reqErr := http.NewRequest("GET", authURL, nil)
+	if reqErr != nil {
+		return nil, reqErr
+	}
+	req.AddCookie(antiForgeryCookie)
+	req.AddCookie(sessionCookies.idsrv)
+	req.AddCookie(sessionCookies.idsrvSession)
+	return req, nil
+}
+
+func getMalformattedCnscCookie(homepageRedirectRes *http.Response) *http.Cookie {
+	setCookieHeader := homepageRedirectRes.Header.Get("Set-Cookie")
+	indexOfFirstEquals := strings.IndexByte(setCookieHeader, '=')
+	cookieWithoutName := setCookieHeader[indexOfFirstEquals+1:]
+	indexOfFirstSemicolon := strings.IndexByte(cookieWithoutName, ';')
+	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon-1]
+
+	return &http.Cookie{
+		Name:     "cnsc",
+		Value:    cookieWithoutAttributes,
+		HttpOnly: true,
+	}
 }
 
 type name struct {
@@ -138,10 +159,10 @@ func GetSession(username string, password string) (Session, error) {
 	if authPageResErr != nil {
 		return Session{}, authPageResErr
 	}
+	defer authPageRes.Body.Close()
 
 	antiForgeryCookie := getAntiforgeryCookie(authPageRes)
 	authToken, authTokenErr := getAuthenticationToken(authPageRes)
-	authPageRes.Body.Close()
 	if authTokenErr != nil {
 		return Session{}, authTokenErr
 	}
@@ -152,22 +173,21 @@ func GetSession(username string, password string) (Session, error) {
 	}
 
 	stineAuthURL, stineAuthURLErr := getSTINEAuthURL(client)
-	if stineAuthURL != nil {
+	if stineAuthURLErr != nil {
 		return Session{}, stineAuthURLErr
 	}
 
-	authRes, authResErr := client.Get(stineAuthURL)
-	if authResErr != nil {
-		return Session{}, authResErr
+	homepageRedirectReq, homepageRedirectReqErr := createHomepageRedirectRequest(stineAuthURL, idsrvCookies, antiForgeryCookie)
+	if homepageRedirectReqErr != nil {
+		return Session{}, homepageRedirectReqErr
 	}
-	defer authReq.Body.Close()
-	homepageRedirect := getHomepageRedirect(authRes)
-	cnscCookie := getCNSCCookie(authRes)
+	homepageRedirectRes, homepageRedirectResErr := client.Do(homepageRedirectReq)
+	if homepageRedirectResErr != nil {
+		return Session{}, homepageRedirectResErr
+	}
+	homepageURL := getRedirectFromRefreshHeader(homepageRedirectRes.Header)
+	cnscCookie := getMalformattedCnscCookie(homepageRedirectRes)
+	fmt.Println(homepageURL, cnscCookie)
 
-	fmt.Println(homepageRedirect, cnscCookie)
-
-	return Session{
-		client:      client,
-		homepageURL: homepageURL,
-	}, nil
+	return Session{}, nil
 }
