@@ -34,6 +34,26 @@ func logRequest(request *http.Request) {
 	fmt.Printf("REQUEST:\n%s", string(reqDump))
 }
 
+func getSTINEAuthURL(client *http.Client) (string, error) {
+	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
+	resp, err := client.Get(reqURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	authURL, onPage := doc.Find("#logIn_btn").First().Attr("href")
+	if !onPage {
+		return "", errors.New("unable to find login button on STiNE page")
+	}
+
+	return authURL, nil
+}
+
 func getAuthenticationToken(authPageRes *http.Response) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(authPageRes.Body)
 	if err != nil {
@@ -75,6 +95,14 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	}
 }
 
+func getRedirectFromRefreshHeader(header http.Header) string {
+	refreshHeader := header.Get("Refresh")
+	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
+	redirectPath := refreshHeader[indexOfFirstEquals+1:]
+	redirectURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", redirectPath)
+	return redirectURL
+}
+
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
 // returns url, which re-directs to homepage, contains sessionId and is made of the following format
@@ -109,34 +137,6 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 
 	homepageURL := getRedirectFromRefreshHeader(res.Header)
 	return homepageURL, nil
-}
-
-func getSTINEAuthURL(client *http.Client) (string, error) {
-	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
-	resp, err := client.Get(reqURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	authURL, onPage := doc.Find("#logIn_btn").First().Attr("href")
-	if !onPage {
-		return "", errors.New("unable to find login button on STiNE page")
-	}
-
-	return authURL, nil
-}
-
-func getRedirectFromRefreshHeader(header http.Header) string {
-	refreshHeader := header.Get("Refresh")
-	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
-	redirectPath := refreshHeader[indexOfFirstEquals+1:]
-	redirectURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", redirectPath)
-	return redirectURL
 }
 
 func GetSession(username string, password string) (Session, error) {
