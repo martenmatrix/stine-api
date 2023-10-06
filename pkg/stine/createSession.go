@@ -86,7 +86,7 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	indexOfFirstEquals := strings.IndexByte(setCookieHeader, '=')
 	cookieWithoutName := setCookieHeader[indexOfFirstEquals+1:]
 	indexOfFirstSemicolon := strings.IndexByte(cookieWithoutName, ';')
-	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon-1]
+	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon]
 
 	return &http.Cookie{
 		Name:     "cnsc",
@@ -136,6 +136,7 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
 	// http library does not follow "Refresh"-Header re-directs, re-directing manually
+	fmt.Println(cnscCookie.Value)
 	fmt.Println(getSessionNo(res.Header.Get("Refresh")))
 
 	return "homepageURL", nil
