@@ -97,18 +97,15 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	}
 }
 
-func getRedirectFromRefreshHeader(header http.Header) string {
-	refreshHeader := header.Get("Refresh")
-	indexOfFirstEquals := strings.IndexByte(refreshHeader, '=')
-	redirectPath := refreshHeader[indexOfFirstEquals+1:]
-	redirectURL := fmt.Sprintf("https://stine.uni-hamburg.de%s", redirectPath)
-	return redirectURL
+// stine url are from the following format
+// dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args
+func getSessionNo(urlStr string) string {
+	_, path, _ := strings.Cut(urlStr, "ARGUMENTS=-N")
+	return path[:15]
 }
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
-// returns url, which re-directs to homepage, contains sessionId and is made of the following format
-// dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args
 func makeSessionCookies(client *http.Client, returnURL string, username string, password string, authToken string) (string, error) {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
@@ -130,6 +127,7 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 		return "", errors.New("authentication with username/password failed")
 	}
 
+	// cnsc cookie is retunred malformatted, set manually on client
 	cnscCookie := getMalformattedCnscCookie(res)
 	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/scripts")
 	if stineURLErr != nil {
@@ -137,10 +135,10 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	}
 	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
-	client.Jar.Cookies(stineURL)
+	// http library does not follow "Refresh"-Header re-directs, re-directing manually
+	fmt.Println(getSessionNo(res.Header.Get("Refresh")))
 
-	homepageURL := getRedirectFromRefreshHeader(res.Header)
-	return homepageURL, nil
+	return "homepageURL", nil
 }
 
 func GetSession(username string, password string) (Session, error) {
@@ -171,18 +169,7 @@ func GetSession(username string, password string) (Session, error) {
 	if idsrvError != nil {
 		return Session{}, idsrvError
 	}
-
-	req1, _ := http.NewRequest("GET", homepageURL, nil)
-	logRequest(req1)
-	res1, err2 := client.Do(req1)
-	if err2 != nil {
-		return Session{}, authPageResErr
-	}
-	defer res1.Body.Close()
-	logResponse(res1)
-
-	return Session{
-		client:      client,
-		homepageURL: homepageURL,
-	}, nil
+	res, _ := client.Get(homepageURL)
+	fmt.Println(res)
+	return Session{}, nil
 }
