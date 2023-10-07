@@ -135,7 +135,7 @@ func makeSessionCookies(client *http.Client, returnURL string, username string, 
 	}
 	client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
-	// http library does not follow "Refresh"-Header re-directs, re-directing manually
+	// http library does not follow "Refresh"-Header, not in http specification
 	fmt.Println(cnscCookie.Value)
 	fmt.Println(getSessionNo(res.Header.Get("Refresh")))
 
