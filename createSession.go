@@ -105,7 +105,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	}
 	res, resErr := session.client.PostForm(reqURL, formQuery)
 	if resErr != nil {
-		return "", resErr
+		return resErr
 	}
 	defer res.Body.Close()
 
@@ -117,7 +117,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	cnscCookie := getMalformattedCnscCookie(res)
 	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/scripts")
 	if stineURLErr != nil {
-		return "", stineURLErr
+		return stineURLErr
 	}
 	session.client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
