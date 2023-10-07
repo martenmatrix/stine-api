@@ -14,6 +14,12 @@ type Session struct {
 	sessionNo string
 }
 
+func NewSession() Session {
+	return Session{
+		client: getClient(),
+	}
+}
+
 func getSTINEAuthURL(client *http.Client) (string, error) {
 	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
 	resp, err := client.Get(reqURL)
