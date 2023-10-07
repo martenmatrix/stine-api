@@ -92,7 +92,7 @@ func getSessionNo(urlStr string) string {
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
-func (session *Session) makeSessionCookies(returnURL string, username string, password string, authToken string) error {
+func (session *Session) makeSession(returnURL string, username string, password string, authToken string) error {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
 		"ReturnUrl":                  {returnURL},
