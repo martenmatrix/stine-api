@@ -91,7 +91,7 @@ func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	}
 }
 
-// stine url are from the following format
+// stine urls are from the following format
 // dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args
 func getSessionNo(urlStr string) string {
 	_, path, _ := strings.Cut(urlStr, "ARGUMENTS=-N")
