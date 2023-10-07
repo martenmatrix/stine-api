@@ -19,13 +19,7 @@ func NewSession() Session {
 	}
 }
 
-func (session *Session) getSTINEAuthURL() (string, error) {
-	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
-	resp, err := session.client.Get(reqURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+func getLoginHrefValue(response *http.Response) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return "", err
@@ -36,6 +30,21 @@ func (session *Session) getSTINEAuthURL() (string, error) {
 		return "", errors.New("unable to find login button on STiNE page")
 	}
 
+	return authURL, nil
+}
+
+func (session *Session) getSTINEAuthURL() (string, error) {
+	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
+	resp, err := session.client.Get(reqURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	authURL, authURLError := getLoginHrefValue(resp)
+	if authURLError != nil {
+		return "", authURLError
+	}
 	return authURL, nil
 }
 
