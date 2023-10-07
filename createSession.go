@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 )
@@ -14,24 +12,6 @@ import (
 type Session struct {
 	client      *http.Client
 	homepageURL string
-}
-
-func logResponse(response *http.Response) {
-	resDump, err := httputil.DumpResponse(response, true)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("RESPONSE:\n%s", string(resDump))
-}
-
-func logRequest(request *http.Request) {
-	reqDump, err := httputil.DumpRequest(request, true)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("REQUEST:\n%s", string(reqDump))
 }
 
 func getSTINEAuthURL(client *http.Client) (string, error) {
