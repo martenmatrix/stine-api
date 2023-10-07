@@ -92,7 +92,7 @@ func getSessionNo(urlStr string) string {
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
-func (session *Session) makeSessionCookies(returnURL string, username string, password string, authToken string) (string, error) {
+func (session *Session) makeSessionCookies(returnURL string, username string, password string, authToken string) error {
 	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 	formQuery := url.Values{
 		"ReturnUrl":                  {returnURL},
@@ -110,7 +110,7 @@ func (session *Session) makeSessionCookies(returnURL string, username string, pa
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return "", errors.New("authentication with username/password failed")
+		return errors.New("authentication with username/password failed")
 	}
 
 	// cnsc cookie is retunred malformatted, set manually on client
@@ -122,10 +122,9 @@ func (session *Session) makeSessionCookies(returnURL string, username string, pa
 	session.client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
 	// http library does not follow "Refresh"-Header, not in http specification
-	fmt.Println(cnscCookie.Value)
-	fmt.Println(getSessionNo(res.Header.Get("Refresh")))
+	session.sessionNo = getSessionNo(res.Header.Get("Refresh"))
 
-	return "homepageURL", nil
+	return nil
 }
 
 func GetSession(username string, password string) (Session, error) {
