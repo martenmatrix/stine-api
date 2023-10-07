@@ -126,7 +126,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	return nil
 }
 
-func (session *Session) login(username string, password string) error {
+func (session *Session) Login(username string, password string) error {
 	authURL, authURLErr := session.getSTINEAuthURL()
 	if authURLErr != nil {
 		return authURLErr
