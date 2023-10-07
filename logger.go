@@ -13,7 +13,7 @@ func logResponse(response *http.Response) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("RESPONSE:\n%s", string(resDump))
+	fmt.Printf("RESPONSE:\n%s\n", string(resDump))
 }
 
 func logRequest(request *http.Request) {
@@ -22,5 +22,5 @@ func logRequest(request *http.Request) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("REQUEST:\n%s", string(reqDump))
+	fmt.Printf("REQUEST:\n%s\n", string(reqDump))
 }
