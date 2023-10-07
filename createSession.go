@@ -10,8 +10,8 @@ import (
 )
 
 type Session struct {
-	client      *http.Client
-	homepageURL string
+	client    *http.Client
+	sessionNo string
 }
 
 func getSTINEAuthURL(client *http.Client) (string, error) {
