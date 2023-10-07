@@ -2,7 +2,6 @@ package stineapi
 
 import (
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
@@ -127,35 +126,32 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	return nil
 }
 
-func login(username string, password string) (Session, error) {
-	client := getClient()
-
-	authURL, authURLErr := getSTINEAuthURL(client)
+func (session *Session) login(username string, password string) error {
+	authURL, authURLErr := session.getSTINEAuthURL()
 	if authURLErr != nil {
-		return Session{}, authURLErr
+		return authURLErr
 	}
 
 	// creates inital antiforgery cookie in jar
-	authPageRes, authPageResErr := client.Get(authURL)
+	authPageRes, authPageResErr := session.client.Get(authURL)
 	if authPageResErr != nil {
-		return Session{}, authPageResErr
+		return authPageResErr
 	}
 	defer authPageRes.Body.Close()
 
 	authToken, authTokenErr := getAuthenticationToken(authPageRes)
 	if authTokenErr != nil {
-		return Session{}, authTokenErr
+		return authTokenErr
 	}
 	returnURL, returnURLErr := getReturnURL(authPageRes)
 	if returnURLErr != nil {
-		return Session{}, returnURLErr
+		return returnURLErr
 	}
 
-	homepageURL, idsrvError := makeSessionCookies(client, returnURL, username, password, authToken)
-	if idsrvError != nil {
-		return Session{}, idsrvError
+	makeSessionError := session.makeSession(returnURL, username, password, authToken)
+	if makeSessionError != nil {
+		return makeSessionError
 	}
-	res, _ := client.Get(homepageURL)
-	fmt.Println(res)
-	return Session{}, nil
+
+	return nil
 }
