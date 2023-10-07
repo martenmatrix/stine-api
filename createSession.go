@@ -19,7 +19,7 @@ func NewSession() Session {
 	}
 }
 
-func getLoginHrefValue(response *http.Response) (string, error) {
+func getLoginHrefValue(resp *http.Response) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return "", err
