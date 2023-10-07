@@ -20,3 +20,31 @@ as form data
 
 3. Then a request is sent with the Antiforgery, idsrv, and idsrv.session cookie to https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=LOGINCHECK&ARGUMENTS=-N000000000000001,ids_mode&ids_mode=Y&code=6aBOWNDRagIDr6jXrD0Rd5IN4ykodFmSm69Zkixklv0&scope=openid%20DSF&session_state=AxNsnI2JwdkQrYflHC0vzIA1jNWF0zMXQaVBGRzt0R8.fWUegKO7rZzezebB4G2PFg
 a CNSC cookie is returned, this is the authentication token for STiNE 6DFC4605546BE2DC9C4E8FC27C297189
+
+https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=LOGINCHECK&ARGUMENTS=-N000000000000001,ids_mode&ids_mode=Y&code=q3CYBt35EtjG9aEimNGyFYrP-Kkjl-NS6zUqsVc_VV8&scope=openid%20DSF&session_state=MjPXtuKNVi--o8s8uqj3TrNGn_J71F5js9COt2ReOnI.JEK0kWkLmJuUWzmy8iAycw
+
+https://cndsf.ad.uni-hamburg.de/IdentityServer/connect/authorize?client_id=ClassicWeb&scope=openid%20DSF&response_mode=query&response_type=code&nonce=kQEKs7lCwN2CEXvCDeD1Zw==&redirect_uri=
+https%3A%2F%2Fstine.uni-hamburg.de%2Fscripts%2Fmgrqispi.dll%3FAPPNAME%3DCampusNet%26PRGNAME%3DLOGINCHECK%26ARGUMENTS%3D-N000000000000001%2Cids_mode%26ids_mode%3DY
+https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=LOGINCHECK&ARGUMENTS=-N000000000000001,ids_mode&ids_mode=Y
+
+
+APPNAME = CampusNet
+PRGNAME = LOGINCHECK
+ARGUMENTS = -N
+dispatcher = mgrqispi.dll
+applicationName = CampusNet
+programName = LOGINCHECK
+sessionNo = 000000000000001,ids_mode&ids_mode=Y&code=q3CYBt35EtjG9aEimNGyFYrP-Kkjl
+menuId + temp_args = S6zUqsVc_VV8&scope=openid%20DSF&session_state=MjPXtuKNVi--o8s8uqj3TrNGn_J71F5js9COt2ReOnI.JEK0kWkLmJuUWzmy8iAycw
+
+
+window.location.href = dispatcher + "?APPNAME=" + applicationName + "&PRGNAME=" + programName + "&ARGUMENTS=-N" + sessionNo + ",-N" + menuId  + temp_args;
+
+
+https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=MLSSTART&ARGUMENTS=-N233695843641291,-N
+to view Homepage as logged in user, mennuId + temp_args are not needed, only sessionNo
+
+https://cndsf.ad.uni-hamburg.de/IdentityServer/connect/authorize?client_id=ClassicWeb&scope=openid%20DSF&response_mode=query&response_type=code&nonce=kQEKs7lCwN2CEXvCDeD1Zw==&redirect_uri=https%3A%2F%2Fstine.uni-hamburg.de%2Fscripts%2Fmgrqispi.dll%3FAPPNAME%3DCampusNet%26PRGNAME%3DLOGINCHECK%26ARGUMENTS%3D-N000000000000001%2Cids_mode%26ids_mode%3DY
+THIS CAN BE RETRIEVED FROM THE FORM HIDDEN INPUT VALUE AND AFTER THAT READ THE LOCATION FROM THE RESPONSE => FROM THERE YOU SHOULD BE LOGGED IN
+
+https://cndsf.ad.uni-hamburg.de/IdentityServer/connect/authorize?client_id=ClassicWeb&scope=openid%20DSF&response_mode=query&response_type=code&nonce=kQEKs7lCwN2CEXvCDeD1Zw==&redirect_uri=https%3A%2F%2Fstine.uni-hamburg.de%2Fscripts%2Fmgrqispi.dll%3FAPPNAME%3DCampusNet%26PRGNAME%3DLOGINCHECK%26ARGUMENTS%3D-N000000000000001%2Cids_mode%26ids_mode%3DY

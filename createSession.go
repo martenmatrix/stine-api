@@ -1,4 +1,4 @@
-package stine
+package stineapi
 
 import (
 	"errors"
