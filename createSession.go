@@ -36,7 +36,7 @@ func getLoginHrefValue(resp *http.Response) (string, error) {
 	return authURL, nil
 }
 
-func (session *Session) getSTINEAuthURL(startPageURL string) (string, error) {
+func (session *Session) getLinkToAuthForm(startPageURL string) (string, error) {
 	resp, err := session.client.Get(startPageURL)
 	if err != nil {
 		return "", err
@@ -137,13 +137,13 @@ func (session *Session) makeSession(returnURL string, username string, password 
 }
 
 func (session *Session) Login(username string, password string) error {
-	authURL, authURLErr := session.getSTINEAuthURL(startPage)
-	if authURLErr != nil {
+	linkToAuthForm, linkToAuthFormErr := session.getLinkToAuthForm(startPage)
+	if linkToAuthFormErr != nil {
 		return authURLErr
 	}
 
 	// creates inital antiforgery cookie in jar
-	authPageRes, authPageResErr := session.client.Get(authURL)
+	authPageRes, authPageResErr := session.client.Get(linkToAuthForm)
 	if authPageResErr != nil {
 		return authPageResErr
 	}
