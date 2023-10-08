@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -21,6 +22,26 @@ func TestGetLoginHrefValue(t *testing.T) {
 	if auth != fakeId {
 		t.Errorf("WANT: %s, GOT: %s", fakeId, auth)
 	} else if err != nil {
+		t.Errorf("ERROR: %s", err)
+	}
+}
+
+func TestGetLinkToAuthForm(t *testing.T) {
+	session := NewSession()
+	fakeId := "aWonderfulId"
+
+	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("<a id='logIn_btn' class='img img_arrowSubmit' title='Anmelden' href='aWonderfulId'>Anmelden</a>"))
+	}),
+	)
+	defer fakeServer.Close()
+
+	auth, err := session.getLinkToAuthForm(fakeServer.URL)
+
+	if auth != fakeId {
+		t.Errorf("WANT: %s, GOT: %s", fakeId, auth)
+	}
+	if err != nil {
 		t.Errorf("ERROR: %s", err)
 	}
 }
