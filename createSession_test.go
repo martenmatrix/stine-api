@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -58,6 +59,28 @@ func TestGetAuthenticationToken(t *testing.T) {
 	authToken, err := getAuthenticationToken(fakeResponse)
 	if authToken != fakeId {
 		t.Errorf("WANT: %s, GOT: %s", fakeId, authToken)
+	}
+	if err != nil {
+		t.Errorf("ERROR: %s", err)
+	}
+}
+
+func TestGetReturnURL(t *testing.T) {
+	fakeRequest := &http.Request{
+		URL: &url.URL{
+			Host:     "cndsf.ad.uni-hamburg.de",
+			RawQuery: "ReturnUrl=%2FIdentityServer%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3D",
+		},
+	}
+	fakeResponse := &http.Response{
+		StatusCode: 200,
+		Request:    fakeRequest,
+	}
+
+	returnURL, err := getReturnURL(fakeResponse)
+
+	if returnURL != "/IdentityServer/connect/authorize/callback?client_id=" {
+		t.Errorf("WANT: /IdentityServer/connect/authorize/callback?client_id=, GOT: %s", returnURL)
 	}
 	if err != nil {
 		t.Errorf("ERROR: %s", err)
