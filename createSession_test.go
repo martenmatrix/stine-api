@@ -21,7 +21,8 @@ func TestGetLoginHrefValue(t *testing.T) {
 
 	if auth != fakeId {
 		t.Errorf("WANT: %s, GOT: %s", fakeId, auth)
-	} else if err != nil {
+	}
+	if err != nil {
 		t.Errorf("ERROR: %s", err)
 	}
 }
