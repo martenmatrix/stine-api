@@ -86,3 +86,22 @@ func TestGetReturnURL(t *testing.T) {
 		t.Errorf("ERROR: %s", err)
 	}
 }
+
+func TestGetMalformattedCNSCCookie(t *testing.T) {
+	fakeResponse := &http.Response{
+		StatusCode: 200,
+		Header: http.Header{
+			// cookie needs to be malformatted
+			"Set-Cookie": {"cnsc =DWFWDF;"},
+		},
+	}
+
+	cnscCookie := getMalformattedCnscCookie(fakeResponse)
+
+	if cnscCookie.Value != "DWFWDF" {
+		t.Errorf("Cookies value differs from response value")
+	}
+	if cnscCookie.Name != "cnsc" {
+		t.Errorf("Cookies name differs from response name")
+	}
+}
