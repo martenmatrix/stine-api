@@ -122,7 +122,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 		return errors.New("authentication with username/password failed")
 	}
 
-	// cnsc cookie is retunred malformatted, set manually on client
+	// cnsc cookie is returned malformatted, set manually on client
 	cnscCookie := getMalformattedCnscCookie(res)
 	stineURL, stineURLErr := url.Parse("https://stine.uni-hamburg.de/scripts")
 	if stineURLErr != nil {
