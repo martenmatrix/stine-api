@@ -46,3 +46,20 @@ func TestGetLinkToAuthForm(t *testing.T) {
 		t.Errorf("ERROR: %s", err)
 	}
 }
+
+func TestGetAuthenticationToken(t *testing.T) {
+	fakeId := "aTestingId"
+	fakeElement := fmt.Sprintf(`<input name="__RequestVerificationToken" type="hidden" value="%s"></input>`, fakeId)
+	fakeResponse := &http.Response{
+		StatusCode: 200,
+		Body:       ioutil.NopCloser(bytes.NewBufferString(fakeElement)),
+	}
+
+	authToken, err := getAuthenticationToken(fakeResponse)
+	if authToken != fakeId {
+		t.Errorf("WANT: %s, GOT: %s", fakeId, authToken)
+	}
+	if err != nil {
+		t.Errorf("ERROR: %s", err)
+	}
+}
