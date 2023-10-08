@@ -139,21 +139,21 @@ func (session *Session) makeSession(returnURL string, username string, password 
 func (session *Session) Login(username string, password string) error {
 	linkToAuthForm, linkToAuthFormErr := session.getLinkToAuthForm(startPage)
 	if linkToAuthFormErr != nil {
-		return authURLErr
+		return linkToAuthFormErr
 	}
 
 	// creates inital antiforgery cookie in jar
-	authPageRes, authPageResErr := session.client.Get(linkToAuthForm)
-	if authPageResErr != nil {
-		return authPageResErr
+	authFormRes, authFormResErr := session.client.Get(linkToAuthForm)
+	if authFormResErr != nil {
+		return authFormResErr
 	}
-	defer authPageRes.Body.Close()
+	defer authFormRes.Body.Close()
 
-	authToken, authTokenErr := getAuthenticationToken(authPageRes)
+	authToken, authTokenErr := getAuthenticationToken(authFormRes)
 	if authTokenErr != nil {
 		return authTokenErr
 	}
-	returnURL, returnURLErr := getReturnURL(authPageRes)
+	returnURL, returnURLErr := getReturnURL(authFormRes)
 	if returnURLErr != nil {
 		return returnURLErr
 	}
