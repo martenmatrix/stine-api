@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+const startPage = "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
+const authenticationForm = "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
+
 type Session struct {
 	client    *http.Client
 	sessionNo string
@@ -33,9 +36,8 @@ func getLoginHrefValue(resp *http.Response) (string, error) {
 	return authURL, nil
 }
 
-func (session *Session) getSTINEAuthURL() (string, error) {
-	reqURL := "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
-	resp, err := session.client.Get(reqURL)
+func (session *Session) getSTINEAuthURL(startPageURL string) (string, error) {
+	resp, err := session.client.Get(startPageURL)
 	if err != nil {
 		return "", err
 	}
@@ -100,8 +102,7 @@ func getSessionNo(urlStr string) string {
 
 // creates idsrv, idsrv.session and cnsc cookie in jar
 // the cnsc cookie needs to be added manually to the jar because the server sends it malformatted
-func (session *Session) makeSession(returnURL string, username string, password string, authToken string) error {
-	reqURL := "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
+func (session *Session) makeSession(returnURL string, username string, password string, authToken string, authenticationFormURL string) error {
 	formQuery := url.Values{
 		"ReturnUrl":                  {returnURL},
 		"CancelUrl":                  {},
@@ -111,7 +112,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 		"button":                     {"login"},
 		"__RequestVerificationToken": {authToken},
 	}
-	res, resErr := session.client.PostForm(reqURL, formQuery)
+	res, resErr := session.client.PostForm(authenticationFormURL, formQuery)
 	if resErr != nil {
 		return resErr
 	}
@@ -136,7 +137,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 }
 
 func (session *Session) Login(username string, password string) error {
-	authURL, authURLErr := session.getSTINEAuthURL()
+	authURL, authURLErr := session.getSTINEAuthURL(startPage)
 	if authURLErr != nil {
 		return authURLErr
 	}
@@ -157,7 +158,7 @@ func (session *Session) Login(username string, password string) error {
 		return returnURLErr
 	}
 
-	makeSessionError := session.makeSession(returnURL, username, password, authToken)
+	makeSessionError := session.makeSession(returnURL, username, password, authToken, authenticationForm)
 	if makeSessionError != nil {
 		return makeSessionError
 	}
