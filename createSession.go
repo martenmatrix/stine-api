@@ -79,14 +79,14 @@ func getReturnURL(authPageRes *http.Response) (string, error) {
 
 func getMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 	setCookieHeader := respWithCookie.Header.Get("Set-Cookie")
-	indexOfFirstEquals := strings.IndexByte(setCookieHeader, '=')
-	cookieWithoutName := setCookieHeader[indexOfFirstEquals+1:]
-	indexOfFirstSemicolon := strings.IndexByte(cookieWithoutName, ';')
-	cookieWithoutAttributes := cookieWithoutName[:indexOfFirstSemicolon]
+	keyValue := strings.Split(setCookieHeader, "=")
+	cookieWithoutName := keyValue[1]
+	cookieValueAndAttributes := strings.Split(cookieWithoutName, ";")
+	cookieValue := cookieValueAndAttributes[0]
 
 	return &http.Cookie{
 		Name:     "cnsc",
-		Value:    cookieWithoutAttributes,
+		Value:    cookieValue,
 		Domain:   "stine.uni-hamburg.de",
 		Path:     "/scripts",
 		HttpOnly: true,
