@@ -92,7 +92,7 @@ func TestGetMalformattedCNSCCookie(t *testing.T) {
 		StatusCode: 200,
 		Header: http.Header{
 			// cookie needs to be malformatted
-			"Set-Cookie": {"cnsc =DWFWDF;"},
+			"Set-Cookie": {"cnsc =DWFWDF; HttpOnly"},
 		},
 	}
 
