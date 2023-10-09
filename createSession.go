@@ -140,6 +140,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	return nil
 }
 
+// Login authenticates a session on the STiNE website. If no error is returned, the user is logged in. The idsvr, idsrv.session and cnsc cookie are added to a cookie jar and the session number is retrieved from the URL.
 func (session *Session) Login(username string, password string) error {
 	linkToAuthForm, linkToAuthFormErr := session.getLinkToAuthForm(startPage)
 	if linkToAuthFormErr != nil {
