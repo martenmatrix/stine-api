@@ -13,6 +13,7 @@ const (
 	authenticationForm = "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
 )
 
+// Session represent a STiNE session. Think of it like an isolated tab with STiNE open.
 type Session struct {
 	client    *http.Client
 	sessionNo string
