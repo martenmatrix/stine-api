@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
-const startPage = "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
-const authenticationForm = "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
+const (
+	startPage          = "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=EXTERNALPAGES&ARGUMENTS=-N000000000000001,-N000265,-Astartseite"
+	authenticationForm = "https://cndsf.ad.uni-hamburg.de/IdentityServer/Account/Login"
+)
 
 type Session struct {
 	client    *http.Client
