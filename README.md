@@ -6,5 +6,9 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 
 ## Table of Contents
 - [Installation](#rocket-installation)
+- [License](#scroll-license)
 
 ## :rocket: Installation
+
+## :scroll: License
+[MIT](./LICENSE)
