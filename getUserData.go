@@ -22,3 +22,10 @@ type address struct {
 type statistics struct {
 	GermanState string
 }
+
+// UserData contains general information about the current authenticated user. It represents the information located under the "Benutzerkonto" tab.
+type UserData struct {
+	General    general
+	Address    address
+	Statistics statistics
+}
