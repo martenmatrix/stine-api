@@ -9,6 +9,10 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 - [License](#scroll-license)
 
 ## :rocket: Installation
+Execute the following line in your Go project:
+```shell
+go install github.com/martenmatrix/stine-api
+```
 
 ## :scroll: License
 [MIT](./LICENSE)
