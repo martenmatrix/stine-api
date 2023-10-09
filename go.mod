@@ -1,4 +1,4 @@
-module stineapi
+module github.com/martenmatrix/stine-api
 
 go 1.18
 
