@@ -6,6 +6,7 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 
 ## Table of Contents
 - [Installation](#rocket-installation)
+- [Documentation](#books-documentation)
 - [License](#scroll-license)
 
 ## :rocket: Installation
@@ -13,6 +14,9 @@ Execute the following line in your Go project:
 ```shell
 go install github.com/martenmatrix/stine-api
 ```
+
+## :books: Documentation
+Under Construction!
 
 ## :scroll: License
 [MIT](./LICENSE)
