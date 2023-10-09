@@ -1,4 +1,4 @@
-module stine-push-notifications
+module stineapi
 
 go 1.18
 
