@@ -19,6 +19,7 @@ type Session struct {
 	sessionNo string
 }
 
+// NewSession creates a new [Session] and returns it.
 func NewSession() Session {
 	return Session{
 		client: getClient(),
