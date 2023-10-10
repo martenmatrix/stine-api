@@ -1,4 +1,4 @@
-package stineapi
+package cmd
 
 type general struct {
 	MatriculationNumber string

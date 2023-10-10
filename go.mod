@@ -1,4 +1,4 @@
-module github.com/martenmatrix/stine-api
+module github.com/martenmatrix/stine-api/cmd
 
 go 1.18
 
