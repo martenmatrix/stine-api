@@ -14,4 +14,4 @@ Basic Usage:
 
 */
 
-package cmd
+package stineapi

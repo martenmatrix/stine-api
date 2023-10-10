@@ -1,4 +1,4 @@
-package cmd
+package stineapi
 
 import (
 	"golang.org/x/net/publicsuffix"
