@@ -16,7 +16,11 @@ Under Construction!
 ## :rocket: Installation
 Execute the following line in your Go project:
 ```shell
-go install github.com/martenmatrix/stine-api
+go get github.com/martenmatrix/stine-api
+```
+and import it with
+```go
+import "github.com/martenmatrix/stine-api/cmd"
 ```
 
 ## :books: Documentation
