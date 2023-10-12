@@ -17,8 +17,22 @@ func (session *Session) replaceSessionNumber(registrationLink string) string {
 	return reg.ReplaceAllString(registrationLink, "ARGUMENTS=-N"+session.sessionNo)
 }
 
+func (session *Session) getRegistrationId(registrationLink string) (string, error) {
+	res, _ := session.client.Get(registrationLink)
+	defer res.Body.Close()
 
-func main() {
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	regId, onPage := doc.Find(`input[name="rgtr_id"]`).First().Attr("value")
+	if !onPage {
+		return "", errors.New("unable to find registration id in response")
+	}
+
+	return regId, nil
+}
 
 func (session *Session) CreateModuleRegistration(registrationLink string) ModuleRegistration {
 	url := session.replaceSessionNumber(registrationLink)
