@@ -2,6 +2,7 @@ package stineapi
 
 import (
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"regexp"
 )
@@ -34,8 +35,12 @@ func (session *Session) getRegistrationId(registrationLink string) (string, erro
 	return regId, nil
 }
 
-func (session *Session) CreateModuleRegistration(registrationLink string) ModuleRegistration {
+func (session *Session) CreateModuleRegistration(registrationLink string) (ModuleRegistration, error) {
 	url := session.replaceSessionNumber(registrationLink)
-	session.getRegistrationId(url)
-	return ModuleRegistration{}
+	regId, regIdErr := session.getRegistrationId(url)
+	if regIdErr != nil {
+		return ModuleRegistration{}, regIdErr
+	}
+	fmt.Println(regId)
+	return ModuleRegistration{}, nil
 }
