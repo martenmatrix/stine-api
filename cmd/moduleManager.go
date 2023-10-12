@@ -14,6 +14,7 @@ TanStartsWith represents the two starting numbers of the required iTAN with a le
 */
 type ModuleRegistration struct {
 	initialLink   string
+	session       *Session
 	TanRequired   bool
 	TanStartsWith string
 }
