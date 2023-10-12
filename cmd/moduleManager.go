@@ -13,6 +13,7 @@ TanRequired is set to true, if the registration process needs action from the us
 TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
 */
 type ModuleRegistration struct {
+	initialLink   string
 	TanRequired   bool
 	TanStartsWith string
 }
