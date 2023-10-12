@@ -1,4 +1,3 @@
-package main
 package stineapi
 
 import (
@@ -12,6 +11,12 @@ type ModuleRegistration struct {
 	TanStartsWith string
 	SetTan        func(tan string)
 }
+
+func (session *Session) replaceSessionNumber(registrationLink string) string {
+	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
+	return reg.ReplaceAllString(registrationLink, "ARGUMENTS=-N"+session.sessionNo)
+}
+
 
 func main() {
 
