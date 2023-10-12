@@ -7,10 +7,14 @@ import (
 	"regexp"
 )
 
+/*
+ModuleRegistration represents a registration for a module on the STiNE platform.
+TanRequired is set to true, if the registration process needs action from the user because an iTAN is required.
+TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
+*/
 type ModuleRegistration struct {
 	TanRequired   bool
 	TanStartsWith string
-	SetTan        func(tan string)
 }
 
 func (session *Session) replaceSessionNumber(registrationLink string) string {
