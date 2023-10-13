@@ -50,7 +50,7 @@ It can be retrieved the following way from the STiNE website:
 2. Navigate to the module subsection, where your module is listed (e.g. for Software Development I when studying Computer Science, go to "Studying" > "Register for modules and courses" > "Compulsory Modules Informatics")
 3. Your module should now be displayed with a bunch of other modules.
 4. There should be a red "Register" button to the right of the module name.
-5. Right-click the button and click "Copy link address", this the registration link for the module!
+5. Right-click the button and click "Copy link address", this is the registration link for the module!
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
 
 
