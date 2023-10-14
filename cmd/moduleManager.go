@@ -22,7 +22,7 @@ type ModuleRegistration struct {
 
 func (modReg *ModuleRegistration) refreshSessionNumber() {
 	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
-	linkWithRefreshedSessionNo := reg.ReplaceAllString(modReg.registrationLink, "ARGUMENTS=-N"+session.sessionNo)
+	linkWithRefreshedSessionNo := reg.ReplaceAllString(modReg.registrationLink, "ARGUMENTS=-N"+modReg.session.sessionNo)
 	modReg.registrationLink = linkWithRefreshedSessionNo
 }
 
