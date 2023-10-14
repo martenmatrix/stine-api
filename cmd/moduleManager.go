@@ -20,9 +20,10 @@ type ModuleRegistration struct {
 	TanStartsWith    string
 }
 
-func (session *Session) refreshSessionNumber(registrationLink string) string {
+func (modReg *ModuleRegistration) refreshSessionNumber() {
 	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
-	return reg.ReplaceAllString(registrationLink, "ARGUMENTS=-N"+session.sessionNo)
+	linkWithRefreshedSessionNo := reg.ReplaceAllString(modReg.registrationLink, "ARGUMENTS=-N"+session.sessionNo)
+	modReg.registrationLink = linkWithRefreshedSessionNo
 }
 
 func (session *Session) doModuleRegistrationFormRequest(reqUrl string, menuId string, registrationId string) string {
