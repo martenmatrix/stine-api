@@ -2,8 +2,8 @@ package stineapi
 
 import (
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"net/url"
 	"regexp"
 )
 
@@ -20,26 +20,43 @@ type ModuleRegistration struct {
 	TanStartsWith    string
 }
 
-func (session *Session) replaceSessionNumber(registrationLink string) string {
+func (session *Session) refreshSessionNumber(registrationLink string) string {
 	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
 	return reg.ReplaceAllString(registrationLink, "ARGUMENTS=-N"+session.sessionNo)
 }
 
-func (session *Session) getRegistrationId(registrationLink string) (string, error) {
-	res, _ := session.client.Get(registrationLink)
+func (session *Session) doModuleRegistrationFormRequest(reqUrl string, menuId string, registrationId string) string {
+	formQuery := url.Values{
+		"Next":      {"Weiter"},
+		"APPNAME":   {"CAMPUSNET"},
+		"PRGNAME":   {"SAVEREGISTRATIONDETAILS"},
+		"ARGUMENTS": {"sessionno,menuid,rgtr_id"},
+		"sessionno": {session.sessionNo},
+		"menuid":    {menuId},
+		"rgtr_id":   {registrationId},
+	}
+	res, _ := session.client.PostForm(reqUrl, formQuery)
+	logResponse(res)
+	return ""
+}
+
+func (modReg *ModuleRegistration) getRegistrationId(registrationLink string) error {
+	res, _ := modReg.session.client.Get(registrationLink)
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	regId, onPage := doc.Find(`input[name="rgtr_id"]`).First().Attr("value")
 	if !onPage {
-		return "", errors.New("unable to find registration id in response")
+		return errors.New("unable to find registration id in response")
 	}
 
-	return regId, nil
+	modReg.registrationId = regId
+
+	return nil
 }
 
 /*
