@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCreateModulRegistration(t *testing.T) {
+func TestCreateModuleRegistration(t *testing.T) {
 	fakeRegistrationLink := "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGCOURSEMOD&ARGUMENTS=-N232343443351119,-N343449,-N343424234011169,-ADOFF,-N343434342285453,-N344343434341730,-N0,-N0,-N0,-AN,-N0"
 	ses := NewSession()
 	moduleReg := ses.CreateModuleRegistration(fakeRegistrationLink)
