@@ -64,3 +64,30 @@ func TestGetRegistrationId(t *testing.T) {
 		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", fakeRegistrationId, modReg.registrationId))
 	}
 }
+
+func TestSetExamDate(t *testing.T) {
+	ses := NewSession()
+	moduleReg := ses.CreateModuleRegistration("https://www.example.org")
+
+	if moduleReg.examDate != 0 {
+		t.Error("default value for examDate should be 0")
+	}
+
+	moduleReg.SetExamDate(1)
+
+	if moduleReg.examDate != 1 {
+		t.Error("unable to change exam date")
+	}
+
+	moduleReg.SetExamDate(3)
+
+	if moduleReg.examDate == 3 {
+		t.Error("able to pass invalid arguments (>2)")
+	}
+
+	moduleReg.SetExamDate(-1)
+
+	if moduleReg.examDate == -1 {
+		t.Error("able to pass invalid arguments (<0)")
+	}
+}
