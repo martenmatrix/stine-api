@@ -41,8 +41,8 @@ func (session *Session) doModuleRegistrationFormRequest(reqUrl string, menuId st
 	return ""
 }
 
-func (modReg *ModuleRegistration) getRegistrationId(registrationLink string) error {
-	res, _ := modReg.session.client.Get(registrationLink)
+func (modReg *ModuleRegistration) getRegistrationId() error {
+	res, _ := modReg.session.client.Get(modReg.registrationLink)
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
