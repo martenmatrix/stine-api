@@ -2,7 +2,9 @@ package stineapi
 
 import (
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"log"
 	"net/url"
 	"regexp"
 )
@@ -15,6 +17,7 @@ TanStartsWith represents the two starting numbers of the required iTAN with a le
 type ModuleRegistration struct {
 	registrationLink string
 	registrationId   string
+	examDate         int
 	session          *Session
 	TanRequired      bool
 	TanStartsWith    string
@@ -61,22 +64,28 @@ func (modReg *ModuleRegistration) getRegistrationId() error {
 }
 
 /*
+SetExamDate allows you to choose a specific exam date. If this function is not executed, the first exam date is selected by default.
+0 - Selects the first exam date (default choice).
+1 - Selects the second exam date.
+2 - Opts for writing the exam in a different semester (exact date not specified).
+*/
+func (modReg *ModuleRegistration) SetExamDate(examDate int) {
+	if examDate < 0 || examDate > 2 {
+		log.Println(fmt.Sprintf("SetExamDate only accepts the integers from 1 to 2. The exam date (current value: %d) will not be changed.", modReg.examDate))
+	}
+	modReg.examDate = examDate
+}
+
+/*
 CreateModuleRegistration creates and returns a ModuleRegistration, which provides functions to register for the specified module and its corresponding events.
 
-It takes two arguments, the first is the link, which navigates the user to the registration process on the STiNE website.
-It can be retrieved the following way from the STiNE website:
+This function requires a registration link as an argument, which can be retrieved the following way for a specific module from the STiNE website:
 1. Navigate to STiNE and login.
 2. Navigate to the module subsection, where your module is listed (e.g. for Software Development I when studying Computer Science, go to "Studying" > "Register for modules and courses" > "Compulsory Modules Informatics")
 3. Your module should now be displayed with a bunch of other modules.
 4. There should be a red "Register" button to the right of the module name.
 5. Right-click the button and click "Copy link address", this is the registration link for the module!
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
-
-
-The second argument specifies, which exam date should be selected. If the module can be completed without an exam, any value from 1 to 3 can be passed as an argument.
-1 - first exam date
-2 - second exam date
-3 - exam date in another semester
 */
 func (session *Session) CreateModuleRegistration(registrationLink string) ModuleRegistration {
 	return ModuleRegistration{
