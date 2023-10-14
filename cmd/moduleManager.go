@@ -10,17 +10,21 @@ import (
 )
 
 /*
-ModuleRegistration represents a registration for a module on the STiNE platform.
-TanRequired is set to true, if the registration process needs action from the user because an iTAN is required.
-TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
+ModuleRegistration represents a running registration for a module on the STiNE platform.
 */
 type ModuleRegistration struct {
 	registrationLink string
 	registrationId   string
 	examDate         int
 	session          *Session
-	TanRequired      bool
-	TanStartsWith    string
+}
+
+/*
+TanRequired is returned from a function, if an iTAN is needed to complete the action.
+TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
+*/
+type TanRequired struct {
+	TanStartsWith string
 }
 
 func (modReg *ModuleRegistration) refreshSessionNumber() {
