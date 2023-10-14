@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"log"
+	"net/http"
 	"net/url"
 	"regexp"
 )
@@ -15,6 +16,7 @@ ModuleRegistration represents a running registration for a module on the STiNE p
 type ModuleRegistration struct {
 	registrationLink string
 	registrationId   string
+	menuId           string
 	examDate         int
 	session          *Session
 }
@@ -33,19 +35,22 @@ func (modReg *ModuleRegistration) refreshSessionNumber() {
 	modReg.registrationLink = linkWithRefreshedSessionNo
 }
 
-func (session *Session) doModuleRegistrationFormRequest(reqUrl string, menuId string, registrationId string) string {
+func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Response, error) {
 	formQuery := url.Values{
 		"Next":      {"Weiter"},
 		"APPNAME":   {"CAMPUSNET"},
 		"PRGNAME":   {"SAVEREGISTRATIONDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id"},
-		"sessionno": {session.sessionNo},
-		"menuid":    {menuId},
-		"rgtr_id":   {registrationId},
+		"sessionno": {modReg.session.sessionNo},
+		"menuid":    {modReg.menuId},
+		"rgtr_id":   {modReg.registrationId},
 	}
-	res, _ := session.client.PostForm(reqUrl, formQuery)
-	logResponse(res)
-	return ""
+	res, err := modReg.session.client.PostForm(reqUrl, formQuery)
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (modReg *ModuleRegistration) getRegistrationId() error {
