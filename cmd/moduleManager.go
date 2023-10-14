@@ -13,10 +13,11 @@ TanRequired is set to true, if the registration process needs action from the us
 TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
 */
 type ModuleRegistration struct {
-	initialLink   string
-	session       *Session
-	TanRequired   bool
-	TanStartsWith string
+	initialLink    string
+	registrationId string
+	session        *Session
+	TanRequired    bool
+	TanStartsWith  string
 }
 
 func (session *Session) replaceSessionNumber(registrationLink string) string {
