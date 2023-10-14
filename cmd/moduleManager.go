@@ -82,7 +82,7 @@ func (modReg *ModuleRegistration) SetExamDate(examDate int) {
 }
 
 /*
-CreateModuleRegistration creates and returns a ModuleRegistration, which provides functions to register for the specified module and its corresponding events.
+CreateModuleRegistration creates and returns a [ModuleRegistration], which provides functions to register for the specified module and its corresponding events.
 
 This function requires a registration link as an argument, which can be retrieved the following way for a specific module from the STiNE website:
 1. Navigate to STiNE and login.
