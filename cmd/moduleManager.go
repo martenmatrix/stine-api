@@ -64,7 +64,8 @@ func (modReg *ModuleRegistration) getRegistrationId() error {
 }
 
 /*
-SetExamDate allows you to choose a specific exam date. If this function is not executed, the first exam date is selected by default.
+SetExamDate allows you to choose a specific exam date for the initial registration. If this function is not executed, the first exam date is selected by default.
+The exam date will not be changed, if the user is already registered for the module.
 0 - Selects the first exam date (default choice).
 1 - Selects the second exam date.
 2 - Opts for writing the exam in a different semester (exact date not specified).
