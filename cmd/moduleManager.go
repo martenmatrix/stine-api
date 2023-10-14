@@ -13,11 +13,11 @@ TanRequired is set to true, if the registration process needs action from the us
 TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
 */
 type ModuleRegistration struct {
-	initialLink    string
-	registrationId string
-	session        *Session
-	TanRequired    bool
-	TanStartsWith  string
+	registrationLink string
+	registrationId   string
+	session          *Session
+	TanRequired      bool
+	TanStartsWith    string
 }
 
 func (session *Session) replaceSessionNumber(registrationLink string) string {
@@ -62,7 +62,7 @@ The second argument specifies, which exam date should be selected:
 */
 func (session *Session) CreateModuleRegistration(registrationLink string) ModuleRegistration {
 	return ModuleRegistration{
-		initialLink: registrationLink,
-		session:     session,
+		registrationLink: registrationLink,
+		session:          session,
 	}
 }
