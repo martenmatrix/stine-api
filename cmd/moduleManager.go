@@ -73,7 +73,7 @@ It can be retrieved the following way from the STiNE website:
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
 
 
-The second argument specifies, which exam date should be selected:
+The second argument specifies, which exam date should be selected. If the module can be completed without an exam, any value from 1 to 3 can be passed as an argument.
 1 - first exam date
 2 - second exam date
 3 - exam date in another semester
