@@ -1,7 +1,9 @@
 package stineapi
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -125,5 +127,25 @@ func TestDoRegistrationRequest(t *testing.T) {
 
 	if valuesPassedCorrectly == false {
 		t.Error("form request is not formatted correctly")
+	}
+}
+
+func TestOniTANPage(t *testing.T) {
+	fakeRes1 := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")),
+	}
+	res1 := oniTANPage(fakeRes1)
+
+	if res1 != false {
+		t.Error("Expected: false, Received: true")
+	}
+
+	fakeRes2 := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString("<html><body><!-- CONFIRM AND TAN INPUT --><span></span></body></html>")),
+	}
+	res2 := oniTANPage(fakeRes2)
+
+	if res2 != true {
+		t.Error("Expected: true, Received: false")
 	}
 }
