@@ -149,3 +149,19 @@ func TestOniTANPage(t *testing.T) {
 		t.Error("Expected: true, Received: false")
 	}
 }
+
+func TestGetTanRequiredStruct(t *testing.T) {
+	fakeRes := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`<span class="itan"> 40</span>`)),
+	}
+
+	tan, err := getTanRequiredStruct(fakeRes)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if tan.TanStartsWith != "040" {
+		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", "040", tan.TanStartsWith))
+	}
+}

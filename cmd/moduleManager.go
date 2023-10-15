@@ -82,6 +82,21 @@ func oniTANPage(res *http.Response) bool {
 	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
 }
 
+func getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
+	doc, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	itanStart := doc.Find(".itan").First().Text()
+
+	iTANWithLeadingZero := strings.ReplaceAll(itanStart, " ", "0")
+
+	return &TanRequired{
+		TanStartsWith: iTANWithLeadingZero,
+	}, nil
+}
+
 /*
 SetExamDate allows you to choose a specific exam date for the initial registration. If this function is not executed, the first exam date is selected by default.
 The exam date will not be changed, if the user is already registered for the module.
