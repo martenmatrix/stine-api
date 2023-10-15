@@ -15,8 +15,8 @@ ModuleRegistration represents a running registration for a module on the STiNE p
 */
 type ModuleRegistration struct {
 	registrationLink string
-	registrationId   string
-	menuId           string
+	registrationId   string // id from a hidden input field, which is returned after requesting the registrationLink
+	menuId           string // menu id represents, which option is selected on the menu to the left on the stine page
 	examDate         int
 	session          *Session
 }
