@@ -107,8 +107,8 @@ This function requires a registration link as an argument, which can be retrieve
 5. Right-click the button and click "Copy link address", this is the registration link for the module!
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
 */
-func (session *Session) CreateModuleRegistration(registrationLink string) ModuleRegistration {
-	return ModuleRegistration{
+func (session *Session) CreateModuleRegistration(registrationLink string) *ModuleRegistration {
+	return &ModuleRegistration{
 		registrationLink: registrationLink,
 		session:          session,
 		menuId:           "000309",
