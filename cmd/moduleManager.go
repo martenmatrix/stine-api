@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 /*
@@ -70,6 +72,14 @@ func (modReg *ModuleRegistration) getRegistrationId() error {
 	modReg.registrationId = regId
 
 	return nil
+}
+
+func oniTANPage(res *http.Response) bool {
+	htmlText, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Println("Could not evaluate, if an iTAN is required. Returning false.")
+	}
+	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
 }
 
 /*
