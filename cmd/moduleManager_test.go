@@ -88,3 +88,42 @@ func TestSetExamDate(t *testing.T) {
 		t.Error("able to pass invalid arguments (<0)")
 	}
 }
+
+func TestDoRegistrationRequest(t *testing.T) {
+	var valuesPassedCorrectly bool
+	sessionNo := "1234"
+	menuId := "54321"
+	rgtrId := "232423"
+
+	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			t.Errorf("ERROR: %s", err)
+		}
+		valuesPassedCorrectly = r.Form.Get("Next") == "Weiter" &&
+			r.Form.Get("APPNAME") == "CAMPUSNET" &&
+			r.Form.Get("PRGNAME") == "SAVEREGISTRATIONDETAILS" &&
+			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id" &&
+			r.Form.Get("sessionno") == sessionNo &&
+			r.Form.Get("menuid") == menuId &&
+			r.Form.Get("rgtr_id") == rgtrId
+	}),
+	)
+	defer fakeServer.Close()
+
+	ses := NewSession()
+	reg := ses.CreateModuleRegistration("https://stine.uni-hamburg.de/")
+	reg.session.sessionNo = sessionNo
+	reg.menuId = menuId
+	reg.registrationId = rgtrId
+	res, err := reg.doRegistrationRequest(fakeServer.URL)
+	defer res.Body.Close()
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if valuesPassedCorrectly == false {
+		t.Error("form request is not formatted correctly")
+	}
+}
