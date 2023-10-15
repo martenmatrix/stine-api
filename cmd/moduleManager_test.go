@@ -155,7 +155,9 @@ func TestGetTanRequiredStruct(t *testing.T) {
 		Body: ioutil.NopCloser(bytes.NewBufferString(`<span class="itan"> 40</span>`)),
 	}
 
-	tan, err := getTanRequiredStruct(fakeRes)
+	ses := NewSession()
+	modReg := ses.CreateModuleRegistration("x")
+	tan, err := modReg.getTanRequiredStruct(fakeRes)
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -163,5 +165,9 @@ func TestGetTanRequiredStruct(t *testing.T) {
 
 	if tan.TanStartsWith != "040" {
 		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", "040", tan.TanStartsWith))
+	}
+
+	if tan.registration.registrationLink != "x" {
+		t.Error("registration struct is not correctly copied to tanrequired struct")
 	}
 }

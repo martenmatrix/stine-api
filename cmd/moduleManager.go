@@ -28,6 +28,7 @@ TanRequired is returned from a function, if an iTAN is needed to complete the ac
 TanStartsWith represents the two starting numbers of the required iTAN with a leading zero.
 */
 type TanRequired struct {
+	registration  *ModuleRegistration
 	TanStartsWith string
 }
 
@@ -82,7 +83,7 @@ func oniTANPage(res *http.Response) bool {
 	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
 }
 
-func getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
+func (modReg *ModuleRegistration) getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
 	doc, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		return nil, err
@@ -93,6 +94,7 @@ func getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
 	iTANWithLeadingZero := strings.ReplaceAll(itanStart, " ", "0")
 
 	return &TanRequired{
+		registration:  modReg,
 		TanStartsWith: iTANWithLeadingZero,
 	}, nil
 }
@@ -130,7 +132,7 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 	// TODO implement exam handling
 
 	if oniTANPage(regRes) {
-		tan, tanErr := getTanRequiredStruct(regRes)
+		tan, tanErr := modReg.getTanRequiredStruct(regRes)
 		if tanErr != nil {
 			return nil, tanErr
 		}
