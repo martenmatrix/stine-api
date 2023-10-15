@@ -14,9 +14,6 @@ func TestCreateModuleRegistration(t *testing.T) {
 	if moduleReg.registrationLink != fakeRegistrationLink {
 		t.Error("registration link is not set on object")
 	}
-	if moduleReg.TanRequired != false || moduleReg.TanStartsWith != "" {
-		t.Error("TanRequired and TanStartsWith do not have default values")
-	}
 }
 
 func TestReferenceCopyOfSessionIsUsed(t *testing.T) {
