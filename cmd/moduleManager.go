@@ -101,5 +101,6 @@ func (session *Session) CreateModuleRegistration(registrationLink string) Module
 	return ModuleRegistration{
 		registrationLink: registrationLink,
 		session:          session,
+		menuId:           "000309",
 	}
 }
