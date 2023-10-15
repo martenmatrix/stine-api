@@ -112,6 +112,35 @@ func (modReg *ModuleRegistration) SetExamDate(examDate int) {
 }
 
 /*
+Register sends the registration to the STiNE servers.
+If an iTAN is required, instead of nil a [TanRequired] is returned.
+*/
+func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
+	modReg.refreshSessionNumber()
+	idErr := modReg.getRegistrationId()
+	if idErr != nil {
+		return nil, idErr
+	}
+
+	regRes, regErr := modReg.doRegistrationRequest(modReg.registrationLink)
+	if regErr != nil {
+		return nil, regErr
+	}
+
+	// TODO implement exam handling
+
+	if oniTANPage(regRes) {
+		tan, tanErr := getTanRequiredStruct(regRes)
+		if tanErr != nil {
+			return nil, tanErr
+		}
+		return tan, nil
+	}
+
+	return nil, nil
+}
+
+/*
 CreateModuleRegistration creates and returns a [ModuleRegistration], which provides functions to register for the specified module and its corresponding events.
 
 This function requires a registration link as an argument, which can be retrieved the following way for a specific module from the STiNE website:
