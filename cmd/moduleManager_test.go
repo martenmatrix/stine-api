@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -169,5 +170,60 @@ func TestGetTanRequiredStruct(t *testing.T) {
 
 	if tan.registration.registrationLink != "x" {
 		t.Error("registration struct is not correctly copied to tanrequired struct")
+	}
+}
+
+func TestSendTan(t *testing.T) {
+	var valuesPassedCorrectly bool
+	tan := &TanRequired{
+		registration: &ModuleRegistration{
+			registrationId: "23233",
+			session: &Session{
+				client:    &http.Client{},
+				sessionNo: "324324",
+			},
+		},
+	}
+
+	formRequestMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			t.Errorf("ERROR: %s", err)
+		}
+		valuesPassedCorrectly = r.Form.Get("campusnetsubmit") == "" &&
+			r.Form.Get("tan_code") == "23" &&
+			r.Form.Get("APPNAME") == "CampusNet" &&
+			r.Form.Get("PRGNAME") == "SAVEREGISTRATION" &&
+			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode,timetable_id,location_id" &&
+			r.Form.Get("sessionno") == tan.registration.session.sessionNo &&
+			r.Form.Get("rgtr_id") == tan.registration.registrationId &&
+			r.Form.Get("mode") == "   0"
+
+		if valuesPassedCorrectly != true {
+			t.Error(fmt.Sprintf("form was not sent with correct attributes: %s", r.Form))
+		}
+	}),
+	)
+	defer formRequestMock.Close()
+
+	err := tan.sendTAN(formRequestMock.URL, "23")
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestCheckForTanError(t *testing.T) {
+	fakeResponse := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`<span class="error">a custom error msg<span>`)),
+	}
+	err := checkForTANError(fakeResponse)
+
+	if err == nil {
+		t.Error("itan was sent not successfully, however no error is returned")
+	}
+
+	if !strings.Contains(err.Error(), "a custom error msg") {
+		t.Error("err msg returned by stine is not contained in returned err")
 	}
 }

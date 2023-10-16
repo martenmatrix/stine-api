@@ -32,6 +32,45 @@ type TanRequired struct {
 	TanStartsWith string
 }
 
+func checkForTANError(res *http.Response) error {
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return err
+	}
+
+	errorMsg := doc.Find(".error").First().Text()
+	if errorMsg != "" {
+		return errors.New(fmt.Sprintf("itan validation could not be completed: %s", errorMsg))
+	}
+	return nil
+}
+
+func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) error {
+	formQuery := url.Values{
+		"campusnet_submit": {""},
+		"tan_code":         {itanWithoutPrefix},
+		"APPNAME":          {"CampusNet"},
+		"PRGNAME":          {"SAVEREGISTRATION"},
+		"ARGUMENTS":        {"sessionno,menuid,rgtr_id,mode,timetable_id,location_id"},
+		"sessionno":        {tanReq.registration.session.sessionNo},
+		"rgtr_id":          {tanReq.registration.registrationId},
+		"mode":             {"   0"},
+	}
+	res, err := tanReq.registration.session.client.PostForm(reqURL, formQuery)
+	defer res.Body.Close()
+
+	if err != nil {
+		return err
+	}
+
+	tanErr := checkForTANError(res)
+	if tanErr != nil {
+		return tanErr
+	}
+
+	return nil
+}
+
 func (modReg *ModuleRegistration) refreshSessionNumber() {
 	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
 	linkWithRefreshedSessionNo := reg.ReplaceAllString(modReg.registrationLink, "ARGUMENTS=-N"+modReg.session.sessionNo)
