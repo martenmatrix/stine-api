@@ -122,6 +122,15 @@ func oniTANPage(res *http.Response) bool {
 	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
 }
 
+func onSelectExamPage(res *http.Response) bool {
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
+	}
+
+	return doc.Find(`input[name="PRGNAME"]`).Text() == "SAVEEXAMDETAILS"
+}
+
 func (modReg *ModuleRegistration) getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
 	doc, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {

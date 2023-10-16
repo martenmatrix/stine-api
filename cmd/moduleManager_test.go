@@ -227,3 +227,21 @@ func TestCheckForTanError(t *testing.T) {
 		t.Error("err msg returned by stine is not contained in returned err")
 	}
 }
+
+func TestOnSelectExamPage(t *testing.T) {
+	onExamPage := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)),
+	}
+
+	notOnExamPage := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)),
+	}
+
+	if onSelectExamPage(onExamPage) {
+		t.Error("should return true")
+	}
+
+	if onSelectExamPage(notOnExamPage) {
+		t.Error("should return false")
+	}
+}
