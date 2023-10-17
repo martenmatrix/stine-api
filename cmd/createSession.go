@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -169,4 +170,13 @@ func (session *Session) Login(username string, password string) error {
 	}
 
 	return nil
+}
+
+/*
+RefreshSessionNumber replaces the session number in a STiNE url with the session number of the current [Session].
+The session number in the URL needs to correspond with a specific cookie to authenticate on STiNE.
+*/
+func (session *Session) RefreshSessionNumber(url string) string {
+	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
+	return reg.ReplaceAllString(url, "ARGUMENTS=-N"+session.sessionNo)
 }

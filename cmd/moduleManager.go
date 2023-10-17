@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 )
 
@@ -71,10 +70,6 @@ func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) erro
 	return nil
 }
 
-func (modReg *ModuleRegistration) refreshSessionNumber() {
-	reg := regexp.MustCompile("ARGUMENTS=-N\\d{15}")
-	linkWithRefreshedSessionNo := reg.ReplaceAllString(modReg.registrationLink, "ARGUMENTS=-N"+modReg.session.sessionNo)
-	modReg.registrationLink = linkWithRefreshedSessionNo
 }
 
 func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Response, error) {
@@ -166,7 +161,7 @@ Register sends the registration to the STiNE servers.
 If an iTAN is required, instead of nil a [TanRequired] is returned.
 */
 func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
-	modReg.refreshSessionNumber()
+	modReg.registrationLink = modReg.session.RefreshSessionNumber(modReg.registrationLink)
 	idErr := modReg.getRegistrationId()
 	if idErr != nil {
 		return nil, idErr
