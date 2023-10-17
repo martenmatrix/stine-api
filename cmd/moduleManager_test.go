@@ -179,7 +179,7 @@ func TestSendTan(t *testing.T) {
 		registration: &ModuleRegistration{
 			registrationId: "23233",
 			session: &Session{
-				client:    &http.Client{},
+				Client:    &http.Client{},
 				sessionNo: "324324",
 			},
 		},

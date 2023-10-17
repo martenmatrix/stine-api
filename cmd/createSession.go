@@ -15,14 +15,14 @@ const (
 
 // Session represent a STiNE session. Think of it like an isolated tab with STiNE open.
 type Session struct {
-	client    *http.Client
+	Client    *http.Client // Client is an HTTP client, which is authenticated on STiNE, after successfully executing [Login]
 	sessionNo string
 }
 
 // NewSession creates a new [Session] and returns it.
 func NewSession() Session {
 	return Session{
-		client: getClient(),
+		Client: getClient(),
 	}
 }
 
@@ -41,7 +41,7 @@ func getLoginHrefValue(resp *http.Response) (string, error) {
 }
 
 func (session *Session) getLinkToAuthForm(startPageURL string) (string, error) {
-	resp, err := session.client.Get(startPageURL)
+	resp, err := session.Client.Get(startPageURL)
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +116,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 		"button":                     {"login"},
 		"__RequestVerificationToken": {authToken},
 	}
-	res, resErr := session.client.PostForm(authenticationFormURL, formQuery)
+	res, resErr := session.Client.PostForm(authenticationFormURL, formQuery)
 	if resErr != nil {
 		return resErr
 	}
@@ -132,7 +132,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	if stineURLErr != nil {
 		return stineURLErr
 	}
-	session.client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
+	session.Client.Jar.SetCookies(stineURL, []*http.Cookie{cnscCookie})
 
 	// http library does not follow "Refresh"-Header, not in http specification
 	session.sessionNo = getSessionNo(res.Header.Get("Refresh"))
@@ -148,7 +148,7 @@ func (session *Session) Login(username string, password string) error {
 	}
 
 	// creates inital antiforgery cookie in jar
-	authFormRes, authFormResErr := session.client.Get(linkToAuthForm)
+	authFormRes, authFormResErr := session.Client.Get(linkToAuthForm)
 	if authFormResErr != nil {
 		return authFormResErr
 	}

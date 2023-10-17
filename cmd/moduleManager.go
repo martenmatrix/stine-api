@@ -56,7 +56,7 @@ func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) erro
 		"rgtr_id":          {tanReq.registration.registrationId},
 		"mode":             {"   0"},
 	}
-	res, err := tanReq.registration.session.client.PostForm(reqURL, formQuery)
+	res, err := tanReq.registration.session.Client.PostForm(reqURL, formQuery)
 	defer res.Body.Close()
 
 	if err != nil {
@@ -87,7 +87,7 @@ func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Re
 		"menuid":    {modReg.menuId},
 		"rgtr_id":   {modReg.registrationId},
 	}
-	res, err := modReg.session.client.PostForm(reqUrl, formQuery)
+	res, err := modReg.session.Client.PostForm(reqUrl, formQuery)
 
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Re
 }
 
 func (modReg *ModuleRegistration) getRegistrationId() error {
-	res, _ := modReg.session.client.Get(modReg.registrationLink)
+	res, _ := modReg.session.Client.Get(modReg.registrationLink)
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
