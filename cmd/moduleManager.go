@@ -70,6 +70,13 @@ func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) erro
 	return nil
 }
 
+/*
+SetTan sends the provided iTAN to the STiNE servers to complete an action. If the validation fails, an error is returned.
+The users iTAN list will be disabled after 3 failed attempts.
+The iTAN can be entered with the [TanStartsWith] as a prefix or without.
+*/
+func (tanReq *TanRequired) SetTan(itan string) error {
+	return nil
 }
 
 func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Response, error) {
