@@ -109,6 +109,41 @@ func getRBCode(res *http.Response) (string, error) {
 	}
 	return rbCode, nil
 }
+
+func (modReg *ModuleRegistration) getExamMode() string {
+	switch modReg.examDate {
+	case 0:
+		return " 1"
+	case 1:
+		return " 2"
+	case 2:
+		return "99"
+	}
+	return " 1"
+}
+
+func (modReg *ModuleRegistration) doExamRegistrationRequest(reqUrl string, rbCode string) (*http.Response, error) {
+	formQuery := url.Values{
+		"Next":      {" Next"},
+		rbCode:      {modReg.getExamMode()},
+		"APPNAME":   {"CAMPUSNET"},
+		"PRGNAME":   {"SAVEEXAMDETAILS"},
+		"ARGUMENTS": {"sessionno,menuid,rgtr_id,mode"},
+		"sessionno": {modReg.session.sessionNo},
+		"menuid":    {modReg.menuId},
+		"rgtr_id":   {modReg.registrationId},
+		"mode":      {"0001"},
+	}
+
+	res, err := modReg.session.Client.PostForm(reqUrl, formQuery)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (modReg *ModuleRegistration) getRegistrationId() error {
 	res, _ := modReg.session.Client.Get(modReg.registrationLink)
 	defer res.Body.Close()

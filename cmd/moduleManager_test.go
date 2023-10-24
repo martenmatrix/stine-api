@@ -247,3 +247,38 @@ func TestGetRbCode(t *testing.T) {
 		t.Error(fmt.Sprintf("Expected: RB_388233088543, Received %s", rbCode))
 	}
 }
+
+func TestDoExamRegistrationRequest(t *testing.T) {
+	var valuesPassedCorrectly bool
+	ses := NewSession()
+	modReg := ses.CreateModuleRegistration("")
+	modReg.SetExamDate(1)
+
+	formRequestMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			t.Errorf("ERROR: %s", err)
+		}
+		valuesPassedCorrectly = r.Form.Get("Next") == " Next" &&
+			r.Form.Get("RBCODE23244") == " 2" &&
+			r.Form.Get("APPNAME") == "CAMPUSNET" &&
+			r.Form.Get("PRGNAME") == "SAVEEXAMDETAILS" &&
+			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode" &&
+			r.Form.Get("sessionno") == modReg.session.sessionNo &&
+			r.Form.Get("menuid") == modReg.menuId &&
+			r.Form.Get("rgtr_id") == modReg.registrationId &&
+			r.Form.Get("mode") == "0001"
+
+		if valuesPassedCorrectly != true {
+			t.Error(fmt.Sprintf("form was not sent with correct attributes: %s", r.Form))
+		}
+	}),
+	)
+	defer formRequestMock.Close()
+
+	_, err := modReg.doExamRegistrationRequest(formRequestMock.URL, "RBCODE23244")
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
