@@ -175,9 +175,15 @@ func onSelectExamPage(res *http.Response) bool {
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
+		return false
 	}
 
-	return doc.Find(`input[name="PRGNAME"]`).Text() == "SAVEEXAMDETAILS"
+	inputValue, exists := doc.Find(`input[name="PRGNAME"]`).Attr("value")
+	if !exists {
+		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
+		return false
+	}
+	return inputValue == "SAVEEXAMDETAILS"
 }
 
 func (modReg *ModuleRegistration) getTanRequiredStruct(response *http.Response) (*TanRequired, error) {

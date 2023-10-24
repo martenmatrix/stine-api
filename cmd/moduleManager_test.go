@@ -223,11 +223,11 @@ func TestOnSelectExamPage(t *testing.T) {
 		Body: ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)),
 	}
 
-	if onSelectExamPage(onExamPage) {
+	if onSelectExamPage(onExamPage) != true {
 		t.Error("should return true")
 	}
 
-	if onSelectExamPage(notOnExamPage) {
+	if onSelectExamPage(notOnExamPage) != false {
 		t.Error("should return false")
 	}
 }
