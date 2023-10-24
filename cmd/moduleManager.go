@@ -103,7 +103,7 @@ func getRBCode(res *http.Response) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	rbCode, exists := doc.Find(".checkBox").First().Attr("name")
+	rbCode, exists := doc.Find("input[type='radio']").First().Attr("name")
 	if !exists {
 		return "", errors.New("name attribute with rb code does not exist on input")
 	}

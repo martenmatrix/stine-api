@@ -234,7 +234,10 @@ func TestOnSelectExamPage(t *testing.T) {
 
 func TestGetRbCode(t *testing.T) {
 	rbCodeRes := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`<input type="radio" class="checkBox" name="RB_388233088543" value=" 1">`)),
+		Body: ioutil.NopCloser(bytes.NewBufferString(`
+		<input name="trap" class="checkBox" value=" 1">
+		<input type="radio" class="checkBox" name="RB_388233088543" value=" 1">
+	`)),
 	}
 
 	rbCode, err := getRBCode(rbCodeRes)
