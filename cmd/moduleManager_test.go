@@ -231,3 +231,19 @@ func TestOnSelectExamPage(t *testing.T) {
 		t.Error("should return false")
 	}
 }
+
+func TestGetRbCode(t *testing.T) {
+	rbCodeRes := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`<input type="radio" class="checkBox" name="RB_388233088543" value=" 1">`)),
+	}
+
+	rbCode, err := getRBCode(rbCodeRes)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if rbCode != "RB_388233088543" {
+		t.Error(fmt.Sprintf("Expected: RB_388233088543, Received %s", rbCode))
+	}
+}

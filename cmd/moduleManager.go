@@ -97,6 +97,18 @@ func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Re
 	return res, nil
 }
 
+// on all pages where a user is able to select an exam date, every input has a name attribute with the same id (called rb code because the id starts with RB_)
+func getRBCode(res *http.Response) (string, error) {
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return "", err
+	}
+	rbCode, exists := doc.Find(".checkBox").First().Attr("name")
+	if !exists {
+		return "", errors.New("name attribute with rb code does not exist on input")
+	}
+	return rbCode, nil
+}
 func (modReg *ModuleRegistration) getRegistrationId() error {
 	res, _ := modReg.session.Client.Get(modReg.registrationLink)
 	defer res.Body.Close()
