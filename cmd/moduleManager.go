@@ -81,8 +81,8 @@ func (tanReq *TanRequired) SetTan(itan string) error {
 
 func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Response, error) {
 	formQuery := url.Values{
-		"Next":      {"Weiter"},
-		"APPNAME":   {"CAMPUSNET"},
+		"Next":      {" Weiter"},
+		"APPNAME":   {"CampusNet"},
 		"PRGNAME":   {"SAVEREGISTRATIONDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id"},
 		"sessionno": {modReg.session.sessionNo},

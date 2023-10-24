@@ -89,8 +89,8 @@ func TestDoRegistrationRequest(t *testing.T) {
 		if err != nil {
 			t.Errorf("ERROR: %s", err)
 		}
-		valuesPassedCorrectly = r.Form.Get("Next") == "Weiter" &&
-			r.Form.Get("APPNAME") == "CAMPUSNET" &&
+		valuesPassedCorrectly = r.Form.Get("Next") == " Weiter" &&
+			r.Form.Get("APPNAME") == "CampusNet" &&
 			r.Form.Get("PRGNAME") == "SAVEREGISTRATIONDETAILS" &&
 			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id" &&
 			r.Form.Get("sessionno") == sessionNo &&
