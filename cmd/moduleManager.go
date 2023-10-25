@@ -159,12 +159,8 @@ func (modReg *ModuleRegistration) getRegistrationId() error {
 	return nil
 }
 
-func oniTANPage(res *http.Response) bool {
-	htmlText, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Println("Could not evaluate, if an iTAN is required. Returning false.")
-	}
-	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
+func oniTANPage(doc *goquery.Document) bool {
+	return doc.Find(".itan").Length() > 0
 }
 
 func onSelectExamPage(doc *goquery.Document) bool {
@@ -229,7 +225,7 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 
 	// TODO implement exam handling
 
-	if oniTANPage(regRes) {
+	if oniTANPage(regDoc) {
 		tan, tanErr := modReg.getTanRequiredStruct(regRes)
 		if tanErr != nil {
 			return nil, tanErr
