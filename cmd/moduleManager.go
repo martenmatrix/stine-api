@@ -98,12 +98,8 @@ func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Re
 }
 
 // on all pages where a user is able to select an exam date, every input has a name attribute with the same id (called rb code because the id starts with RB_)
-func getRBCode(res *http.Response) (string, error) {
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		return "", err
-	}
-	rbCode, exists := doc.Find("input[type='radio']").First().Attr("name")
+func getRBCode(doc *goquery.Document) (string, error) {
+	rbCode, exists := doc.Find(`input[type="radio"]`).First().Attr("name")
 	if !exists {
 		return "", errors.New("name attribute with rb code does not exist on input")
 	}
@@ -171,13 +167,7 @@ func oniTANPage(res *http.Response) bool {
 	return strings.Contains(string(htmlText), "<!-- CONFIRM AND TAN INPUT -->")
 }
 
-func onSelectExamPage(res *http.Response) bool {
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
-		return false
-	}
-
+func onSelectExamPage(doc *goquery.Document) bool {
 	inputValue, exists := doc.Find(`input[name="PRGNAME"]`).Attr("value")
 	if !exists {
 		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
@@ -229,6 +219,11 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 
 	regRes, regErr := modReg.doRegistrationRequest(modReg.registrationLink)
 	if regErr != nil {
+		return nil, regErr
+	}
+	defer regRes.Body.Close()
+	regDoc, regDocErr := goquery.NewDocumentFromReader(regRes.Body)
+	if regDocErr != nil {
 		return nil, regErr
 	}
 
