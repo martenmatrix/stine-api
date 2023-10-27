@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -193,8 +192,9 @@ The exam date will not be changed, if the user is already registered for the mod
 func (modReg *ModuleRegistration) SetExamDate(examDate int) {
 	if examDate < 0 || examDate > 2 {
 		log.Println(fmt.Sprintf("SetExamDate only accepts the integers from 1 to 2. The exam date (current value: %d) will not be changed.", modReg.examDate))
+	} else {
+		modReg.examDate = examDate
 	}
-	modReg.examDate = examDate
 }
 
 /*
@@ -218,13 +218,22 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 		return nil, regErr
 	}
 
-	// TODO implement exam handling
+	// only some modules require an exam registration, before the module registration can be completed
+	// for some modules the exam needs to be booked, after registering for the module
+	if onSelectExamPage(regDoc) {
+		rbCode, rbErr := getRBCode(regDoc)
+		if rbErr != nil {
+			return nil, rbErr
+		}
+		examRes, examResErr := modReg.doExamRegistrationRequest(modReg.registrationLink, rbCode)
+		if examResErr != nil {
+			return nil, examResErr
+		}
+		logResponse(examRes)
+	}
 
 	if oniTANPage(regDoc) {
-		tan, tanErr := modReg.getTanRequiredStruct(regRes)
-		if tanErr != nil {
-			return nil, tanErr
-		}
+		tan := modReg.getTanRequiredStruct(regDoc)
 		return tan, nil
 	}
 
