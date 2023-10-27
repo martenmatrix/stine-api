@@ -172,12 +172,7 @@ func onSelectExamPage(doc *goquery.Document) bool {
 	return inputValue == "SAVEEXAMDETAILS"
 }
 
-func (modReg *ModuleRegistration) getTanRequiredStruct(response *http.Response) (*TanRequired, error) {
-	doc, err := goquery.NewDocumentFromReader(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
+func (modReg *ModuleRegistration) getTanRequiredStruct(doc *goquery.Document) *TanRequired {
 	itanStart := doc.Find(".itan").First().Text()
 
 	iTANWithLeadingZero := strings.ReplaceAll(itanStart, " ", "0")
@@ -185,7 +180,7 @@ func (modReg *ModuleRegistration) getTanRequiredStruct(response *http.Response) 
 	return &TanRequired{
 		registration:  modReg,
 		TanStartsWith: iTANWithLeadingZero,
-	}, nil
+	}
 }
 
 /*
