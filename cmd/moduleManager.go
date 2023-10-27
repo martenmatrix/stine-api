@@ -184,9 +184,13 @@ func (modReg *ModuleRegistration) getTanRequiredStruct(doc *goquery.Document) *T
 
 /*
 SetExamDate allows you to choose a specific exam date for the initial registration. If this function is not executed, the first exam date is selected by default.
+
 The exam date will not be changed, if the user is already registered for the module.
+
 0 - Selects the first exam date (default choice).
+
 1 - Selects the second exam date.
+
 2 - Opts for writing the exam in a different semester (exact date not specified).
 */
 func (modReg *ModuleRegistration) SetExamDate(examDate int) {
@@ -244,11 +248,17 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 CreateModuleRegistration creates and returns a [ModuleRegistration], which provides functions to register for the specified module and its corresponding events.
 
 This function requires a registration link as an argument, which can be retrieved the following way for a specific module from the STiNE website:
+
 1. Navigate to STiNE and login.
+
 2. Navigate to the module subsection, where your module is listed (e.g. for Software Development I when studying Computer Science, go to "Studying" > "Register for modules and courses" > "Compulsory Modules Informatics")
+
 3. Your module should now be displayed with a bunch of other modules.
+
 4. There should be a red "Register" button to the right of the module name.
+
 5. Right-click the button and click "Copy link address", this is the registration link for the module!
+
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
 */
 func (session *Session) CreateModuleRegistration(registrationLink string) *ModuleRegistration {
