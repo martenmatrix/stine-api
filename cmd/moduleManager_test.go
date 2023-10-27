@@ -130,7 +130,7 @@ func TestOniTANPage(t *testing.T) {
 		t.Error("Expected: false, Received: true")
 	}
 
-	fakeRes2, err2 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
+	fakeRes2, err2 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body><span class=\"itan\"</body></html>")))
 	if err2 != nil {
 		t.Errorf(err2.Error())
 	}
