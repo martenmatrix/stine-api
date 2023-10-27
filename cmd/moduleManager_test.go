@@ -3,6 +3,7 @@ package stineapi
 import (
 	"bytes"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -118,17 +119,20 @@ func TestDoRegistrationRequest(t *testing.T) {
 }
 
 func TestOniTANPage(t *testing.T) {
-	fakeRes1 := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")),
+	fakeRes1, err1 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
+	if err1 != nil {
+		t.Errorf(err1.Error())
 	}
+
 	res1 := oniTANPage(fakeRes1)
 
 	if res1 != false {
 		t.Error("Expected: false, Received: true")
 	}
 
-	fakeRes2 := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString("<html><body><!-- CONFIRM AND TAN INPUT --><span></span></body></html>")),
+	fakeRes2, err2 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
+	if err2 != nil {
+		t.Errorf(err2.Error())
 	}
 	res2 := oniTANPage(fakeRes2)
 
@@ -138,13 +142,14 @@ func TestOniTANPage(t *testing.T) {
 }
 
 func TestGetTanRequiredStruct(t *testing.T) {
-	fakeRes := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`<span class="itan"> 40</span>`)),
+	fakeRes, err := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<span class=\"itan\"> 40</span>")))
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 
 	ses := NewSession()
 	modReg := ses.CreateModuleRegistration("x")
-	tan, err := modReg.getTanRequiredStruct(fakeRes)
+	tan := modReg.getTanRequiredStruct(fakeRes)
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -215,12 +220,14 @@ func TestCheckForTanError(t *testing.T) {
 }
 
 func TestOnSelectExamPage(t *testing.T) {
-	onExamPage := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)),
+	onExamPage, errExamPage := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)))
+	if errExamPage != nil {
+		t.Errorf(errExamPage.Error())
 	}
 
-	notOnExamPage := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)),
+	notOnExamPage, errNotExamPage := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)))
+	if errNotExamPage != nil {
+		t.Errorf(errNotExamPage.Error())
 	}
 
 	if onSelectExamPage(onExamPage) != true {
@@ -233,17 +240,18 @@ func TestOnSelectExamPage(t *testing.T) {
 }
 
 func TestGetRbCode(t *testing.T) {
-	rbCodeRes := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`
+	rbCodeRes, err := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString(`
 		<input name="trap" class="checkBox" value=" 1">
 		<input type="radio" class="checkBox" name="RB_388233088543" value=" 1">
-	`)),
-	}
-
-	rbCode, err := getRBCode(rbCodeRes)
-
+	`)))
 	if err != nil {
 		t.Errorf(err.Error())
+	}
+
+	rbCode, rbErr := getRBCode(rbCodeRes)
+
+	if rbErr != nil {
+		t.Errorf(rbErr.Error())
 	}
 
 	if rbCode != "RB_388233088543" {
