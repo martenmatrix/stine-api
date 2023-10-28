@@ -245,7 +245,7 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 	}
 
 	if oniTANPage(currentDocument) {
-		tan := modReg.getTanRequiredStruct(regDoc)
+		tan := modReg.getTanRequiredStruct(currentDocument)
 		return tan, nil
 	}
 
