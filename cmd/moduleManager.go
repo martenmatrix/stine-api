@@ -206,37 +206,45 @@ Register sends the registration to the STiNE servers.
 If an iTAN is required, instead of nil a [TanRequired] is returned.
 */
 func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
+	var currentResponse *http.Response
+	var currentDocument *goquery.Document
+	var err error
+
 	modReg.registrationLink = modReg.session.RefreshSessionNumber(modReg.registrationLink)
-	idErr := modReg.getRegistrationId()
-	if idErr != nil {
-		return nil, idErr
+	err = modReg.getRegistrationId()
+	if err != nil {
+		return nil, err
 	}
 
-	regRes, regErr := modReg.doRegistrationRequest(modReg.registrationLink)
-	if regErr != nil {
-		return nil, regErr
+	currentResponse, err = modReg.doRegistrationRequest(modReg.registrationLink)
+	if err != nil {
+		return nil, err
 	}
-	defer regRes.Body.Close()
-	regDoc, regDocErr := goquery.NewDocumentFromReader(regRes.Body)
-	if regDocErr != nil {
-		return nil, regErr
+	defer currentResponse.Body.Close()
+
+	currentDocument, err = goquery.NewDocumentFromReader(currentResponse.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	// only some modules require an exam registration, before the module registration can be completed
 	// for some modules the exam needs to be booked, after registering for the module
-	if onSelectExamPage(regDoc) {
-		rbCode, rbErr := getRBCode(regDoc)
+	if onSelectExamPage(currentDocument) {
+		rbCode, rbErr := getRBCode(currentDocument)
 		if rbErr != nil {
 			return nil, rbErr
 		}
-		examRes, examResErr := modReg.doExamRegistrationRequest(modReg.registrationLink, rbCode)
-		if examResErr != nil {
-			return nil, examResErr
+		currentResponse, err = modReg.doExamRegistrationRequest(modReg.registrationLink, rbCode)
+		if err != nil {
+			return nil, err
 		}
-		logResponse(examRes)
+		currentDocument, err = goquery.NewDocumentFromReader(currentResponse.Body)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if oniTANPage(regDoc) {
+	if oniTANPage(currentDocument) {
 		tan := modReg.getTanRequiredStruct(regDoc)
 		return tan, nil
 	}
