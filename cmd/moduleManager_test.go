@@ -293,3 +293,72 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 }
+
+func TestRegister(t *testing.T) {
+	// TODO maybe one big test is easier for refactoring instead of tests for every single function
+	var requestCounter int
+	fakeRegistrationId := "2132134"
+	rbCode := "RB_2302138093248321094"
+
+	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		requestCounter++
+
+		if requestCounter == 1 {
+			// get registration id request
+			_, err := writer.Write([]byte(`<input name="rgtr_id" value="` + fakeRegistrationId + `"/>`))
+			if err != nil {
+				t.Errorf(err.Error())
+			}
+		} else if requestCounter == 2 {
+			// check if registration id was parsed correctly from previous mocked response
+			errForm := request.ParseForm()
+			if errForm != nil {
+				t.Errorf("ERROR: %s", errForm)
+			}
+			rgtrId := request.Form.Get("rgtr_id")
+			if rgtrId != fakeRegistrationId {
+				t.Error(fmt.Sprintf("expected %s as form parameter, received %s", fakeRegistrationId, rgtrId))
+			}
+
+			// module registration request, pretending were on exam page
+			_, err := writer.Write([]byte(`
+				<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">
+				<input />
+				<input type="radio" class="checkBox" name="` + rbCode + `" value="  1" />
+			`))
+			if err != nil {
+				t.Errorf(err.Error())
+			}
+		} else if requestCounter == 3 {
+			// check if rb code was parsed correctly from previous mocked response
+			errForm := request.ParseForm()
+			if errForm != nil {
+				t.Errorf("ERROR: %s", errForm)
+			}
+			rbCodeValue := request.Form.Get(rbCode)
+			if rbCodeValue != " 1" {
+				t.Error(fmt.Sprintf("tried to retrieve the value of %s and got %s", rbCode, rbCodeValue))
+			}
+
+			// tan request, pretending we need an itan auth
+			_, err := writer.Write([]byte(`
+				<span class="itan"> 54</span>
+			`))
+			if err != nil {
+				t.Errorf(err.Error())
+			}
+		}
+	}))
+
+	ses := NewSession()
+	modReg := ses.CreateModuleRegistration(fakeServer.URL)
+	tanReq, err := modReg.Register()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if tanReq == nil {
+		t.Error("an itan is required, however no tanrequired object was returned")
+	}
+
+}
