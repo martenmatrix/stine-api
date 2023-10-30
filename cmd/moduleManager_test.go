@@ -363,4 +363,7 @@ func TestRegister(t *testing.T) {
 		t.Error("an itan is required, however no tanrequired object was returned")
 	}
 
+	if requestCounter != 4 {
+		t.Error(fmt.Sprintf("expected 4 requests, however received %d", requestCounter))
+	}
 }
