@@ -303,14 +303,14 @@ func TestRegister(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		requestCounter++
 
-		switch requestCounter {
-		case 1:
+		switch {
+		case requestCounter == 1:
 			// get registration id request
 			_, err := writer.Write([]byte(`<input name="rgtr_id" value="` + fakeRegistrationId + `"/>`))
 			if err != nil {
 				t.Errorf(err.Error())
 			}
-		case 2:
+		case requestCounter == 2:
 			// check if registration id was parsed correctly from previous mocked response
 			errForm := request.ParseForm()
 			if errForm != nil {
@@ -330,7 +330,7 @@ func TestRegister(t *testing.T) {
 			if err != nil {
 				t.Errorf(err.Error())
 			}
-		case 3:
+		case requestCounter == 3:
 			// check if rb code was parsed correctly from previous mocked response
 			errForm := request.ParseForm()
 			if errForm != nil {
@@ -348,6 +348,7 @@ func TestRegister(t *testing.T) {
 			if err != nil {
 				t.Errorf(err.Error())
 			}
+		case requestCounter == 4:
 		}
 	}))
 
