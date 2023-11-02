@@ -24,7 +24,7 @@ import "github.com/martenmatrix/stine-api/cmd"
 ```
 
 ## :books: Documentation
-Under Construction!
+The documentation can be found [here](https://pkg.go.dev/github.com/martenmatrix/stine-api/cmd).
 
 ## :scroll: License
 [MIT](./LICENSE)
