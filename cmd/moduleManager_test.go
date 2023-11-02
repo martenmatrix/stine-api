@@ -294,6 +294,22 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 	}
 }
 
+func TestRemoveTanPrefix(t *testing.T) {
+	tanReq := &TanRequired{
+		TanStartsWith: "054",
+	}
+
+	prefixLeadingZero := tanReq.removeTanPrefix("05421213")
+	if prefixLeadingZero != "21213" {
+		t.Error(fmt.Sprintf("should have removed 054 from tan, received %s", prefixLeadingZero))
+	}
+
+	prefixNormal := tanReq.removeTanPrefix("4242445324")
+	if prefixNormal != "4242445324" {
+		t.Error(fmt.Sprintf("nothing should have been removed from tan, however received %s", prefixNormal))
+	}
+}
+
 func TestRegister(t *testing.T) {
 	// TODO maybe one big test is easier for refactoring instead of tests for every single function
 	var requestCounter int
