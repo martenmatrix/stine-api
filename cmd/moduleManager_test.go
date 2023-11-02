@@ -365,6 +365,15 @@ func TestRegister(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 		case requestCounter == 4:
+			// check if itan was sent correctly
+			errForm := request.ParseForm()
+			if errForm != nil {
+				t.Errorf("ERROR: %s", errForm)
+			}
+			iTanValue := request.Form.Get("tan_code")
+			if iTanValue != "3423" {
+				t.Error(fmt.Sprintf("itan value was not parsed correctly, Expected: %s, Received: %s", "3423", iTanValue))
+			}
 		}
 	}))
 
@@ -377,6 +386,13 @@ func TestRegister(t *testing.T) {
 
 	if tanReq == nil {
 		t.Error("an itan is required, however no tanrequired object was returned")
+	}
+
+	// prefix of tan is 054
+	// supply tan, prefix should be removed
+	tanReqErr := tanReq.SetTan("0543423")
+	if tanReqErr != nil {
+		t.Errorf(tanReqErr.Error())
 	}
 
 	if requestCounter != 4 {
