@@ -69,6 +69,11 @@ func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) erro
 	return nil
 }
 
+func (tanReq *TanRequired) removeTanPrefix(itan string) string {
+	tanWithoutPrefix, _ := strings.CutPrefix(itan, tanReq.TanStartsWith)
+	return tanWithoutPrefix
+}
+
 /*
 SetTan sends the provided iTAN to the STiNE servers to complete an action. If the validation fails, an error is returned.
 The users iTAN list will be disabled after 3 failed attempts.
