@@ -80,6 +80,11 @@ The users iTAN list will be disabled after 3 failed attempts.
 The iTAN can be entered with the [TanStartsWith] as a prefix or without.
 */
 func (tanReq *TanRequired) SetTan(itan string) error {
+	tanWithoutPrefix := tanReq.removeTanPrefix(itan)
+	err := tanReq.sendTAN(tanReq.registration.registrationLink, tanWithoutPrefix)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
