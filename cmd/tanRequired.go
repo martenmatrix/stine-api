@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func checkForTANError(res *http.Response) error {
