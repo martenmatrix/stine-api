@@ -1,5 +1,5 @@
 /*
-This is an unofficial STiNE API for Go. It is easy to use, completely request-based and uses no browser automation, which makes it incredible fast.
+Package stineapi is an unofficial STiNE API for Go. It is easy to use, completely request-based and uses no browser automation, which makes it incredible fast.
 
 Basic Usage:
 
