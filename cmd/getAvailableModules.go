@@ -1,27 +1,27 @@
 package stineapi
 
 type Category struct {
-	title      string      // Title of the Category e.g. "Compulsory Modules Informatics"
-	url        string      // Link associated to title anchor
-	categories *[]Category // All categories, which are listed under the current category
-	modules    *[]Module   // All Module's the category contains
+	Title      string     // Title of the Category e.g. "Compulsory Modules Informatics"
+	Url        string     // Link associated to title anchor
+	Categories []Category // All categories, which are listed under the current category
+	Modules    []Module   // All Module's the category contains
 }
 
 // Module represents a module open for registration.
 type Module struct {
-	title            string // Title of the module
-	teacher          string // Teachers of the module
-	registrationLink string // The link a  user gets re-directed to, if he clicks the red "Register" button
-	events           *[]Event
+	Title            string // Title of the module
+	Teacher          string // Teachers of the module
+	RegistrationLink string // The link a  user gets re-directed to, if he clicks the red "Register" button
+	Events           []Event
 }
 
 // Event represents events of a module like exercises or lectures.
 type Event struct {
-	id              string // ID of the event in the following format 64-010
-	title           string // Title of the event
-	link            string // The link a user gets re-directed to, if he clicks the title
-	maxCapacity     int    // Maximum student capacity of the event
-	currentCapacity int    // Currently registered students for the event
+	Id              string // ID of the event in the following format 64-010
+	Title           string // Title of the event
+	Link            string // The link a user gets re-directed to, if he clicks the title
+	MaxCapacity     int    // Maximum student capacity of the event
+	CurrentCapacity int    // Currently registered students for the event
 }
 
 /*
