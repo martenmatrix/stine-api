@@ -25,6 +25,14 @@ type Event struct {
 }
 
 /*
+Refresh re-fetches the data of a module from the STiNE servers. It is only recommended when fast speed is required
+or bandwidth needs to be saved. Otherwise, run GetAvailableModules again.
+*/
+func (module *Module) Refresh() {
+	// session no should not have changed, otherwise session number in url is not valid anymore
+}
+
+/*
 GetAvailableModules returns the modules currently listed under "Studying" > "Register for modules and courses".
 
 The depth indicates how deep different modules are nested within a category.
