@@ -77,27 +77,73 @@ The registerURL represents the URL, which re-directs to "Studying" > "Register f
 
 The client is the HTTP Client the requests should be executed with.
 */
-func GetAvailableModules(depth int, registerURL string, client *http.Client) ([]Category, error) {
+func GetAvailableModules(depth int, registerURL string, client *http.Client) (Category, error) {
+	initialCategory := Category{
+		Title: "initialPage",
+		Url:   registerURL,
+	}
+
 	resp, errGet := client.Get(registerURL)
 	if errGet != nil {
-		return nil, errGet
+		return Category{}, errGet
 	}
 
 	doc, errDoc := goquery.NewDocumentFromReader(resp.Body)
 	if errDoc != nil {
-		return nil, errDoc
+		return Category{}, errDoc
 	}
 
+	// handle first page
 	categories, errCat := extractCategories(doc)
 	if errCat != nil {
-		return nil, errCat
+		return Category{}, errCat
 	}
 
-	for range categories {
-
+	modules, errMod := extractModules(doc)
+	if errMod != nil {
+		return Category{}, errMod
 	}
 
-	fmt.Println(categories)
+	// save first categories and modules
+	initialCategory.Categories = &categories
+	initialCategory.Modules = &modules
 
-	return []Category{}, nil
+	// while there are categories left, traverse trough them
+	for len(categories) > 0 {
+		// iterate over every category in category list
+		for _, category := range categories {
+			// store old category
+			oldCategory := category
+
+			// fetch new site category links to
+			resp, errGet := client.Get(category.Url)
+			if errGet != nil {
+				return Category{}, errGet
+			}
+
+			// convert to goquery doc
+			newDoc, newDocErr := goquery.NewDocumentFromReader(resp.Body)
+			if newDocErr != nil {
+				return Category{}, newDocErr
+			}
+
+			// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
+			categories, errCat = extractCategories(newDoc)
+			if errCat != nil {
+				return Category{}, errCat
+			}
+
+			// extract modules from newly fetched page and set as modules on old category
+			modules, errMod := extractModules(newDoc)
+			if errMod != nil {
+				return Category{}, errMod
+			}
+
+			// set categories and modules of current category
+			oldCategory.Categories = &categories
+			oldCategory.Modules = &modules
+		}
+	}
+
+	return initialCategory, nil
 }
