@@ -3,6 +3,7 @@ package moduleGetter
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"net/http"
 )
 
 type Category struct {
@@ -55,8 +56,15 @@ However, a further nested structure like 'Computer Science' -> 'Elective Area' -
 as it exceeds the specified depth limit.
 
 The registerURL represents the URL, which re-directs to "Studying" > "Register for modules and courses".
+
+The client is the HTTP Client the requests should be executed with.
 */
 func GetAvailableModules(depth int, registerURL string) ([]Category, error) {
+func GetAvailableModules(depth int, registerURL string, client *http.Client) ([]Category, error) {
+	resp, err := client.Get(registerURL)
+	if err != nil {
+		return nil, err
+	}
 
 	return []Category{}, nil
 }
