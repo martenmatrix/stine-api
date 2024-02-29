@@ -64,6 +64,54 @@ func extractCategories(doc *goquery.Document) ([]Category, error) {
 	return categories, nil
 }
 
+func extractEvents(moduleHeading *goquery.Selection) ([]Event, error) {
+	var events []Event
+
+	// get all following trs, until next module starts, those are the events
+	modules := moduleHeading.NextUntil("tr td .tbsubhead")
+	modules.Each(func(i int, selection *goquery.Selection) {
+		fmt.Println(1)
+	})
+
+	return events, nil
+}
+
+func extractModules(doc *goquery.Document) ([]Module, error) {
+	var modules []Module
+
+	doc.Find("tr").Each(func(i int, selection *goquery.Selection) {
+		html, err := selection.Html()
+		if err != nil {
+			fmt.Println("Some modules may be missing, as HTML could not be parsed")
+		}
+
+		// only select those trs, which are the heading of a module (they contain <!-- MODULE --> as a html comment)
+		if strings.Contains(html, "<!-- MODULE -->") {
+			// iterate over each module
+			title := selection.Find(".eventTitle").Text()
+			teacher := selection.Find("p:not(:has(a))").Text()
+			registerLink, exists := selection.Find(".register").Attr("href")
+			if !exists {
+				registerLink = ""
+			}
+			events, err := extractEvents(selection)
+			if err != nil {
+				fmt.Println(fmt.Sprintf("The events associated to the module %s could not be extracted", title))
+				events = []Event{}
+			}
+
+			modules = append(modules, Module{
+				Title:            title,
+				Teacher:          teacher,
+				RegistrationLink: registerLink,
+				Events:           events,
+			})
+		}
+	})
+
+	return modules, nil
+}
+
 /*
 GetAvailableModules returns the modules currently listed under "Studying" > "Register for modules and courses".
 
