@@ -181,7 +181,7 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 				return Category{}, errCat
 			}
 
-			// extract modules from newly fetched page and set as modules on old category
+			// extract modules from newly fetched page
 			modules, errMod := extractModules(newDoc)
 			if errMod != nil {
 				return Category{}, errMod
