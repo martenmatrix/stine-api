@@ -1,4 +1,9 @@
-package stineapi
+package moduleGetter
+
+import (
+	"fmt"
+	"github.com/PuerkitoBio/goquery"
+)
 
 type Category struct {
 	Title      string     // Title of the Category e.g. "Compulsory Modules Informatics"
