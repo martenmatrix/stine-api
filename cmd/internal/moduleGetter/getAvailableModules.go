@@ -51,6 +51,7 @@ as it exceeds the specified depth limit.
 
 The registerURL represents the URL, which re-directs to "Studying" > "Register for modules and courses".
 */
-func GetAvailableModules(depth int, registerURL string) {
+func GetAvailableModules(depth int, registerURL string) ([]Category, error) {
 
+	return []Category{}, nil
 }
