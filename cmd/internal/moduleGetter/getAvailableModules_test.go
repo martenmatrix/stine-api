@@ -289,7 +289,7 @@ func TestGetAvailableModules(t *testing.T) {
 
 	}))
 
-	modules, err := GetAvailableModules(2, fakeServer.URL)
+	modules, err := GetAvailableModules(2, fakeServer.URL, &http.Client{})
 
 	if err != nil {
 		t.Errorf(err.Error())
