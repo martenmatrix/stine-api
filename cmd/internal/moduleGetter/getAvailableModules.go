@@ -32,6 +32,14 @@ func (module *Module) Refresh() {
 	// session no should not have changed, otherwise session number in url is not valid anymore
 }
 
+func extractCategories(doc *goquery.Document) ([]Category, error) {
+	doc.Find("ul:not([class]) li").Each(func(index int, category *goquery.Selection) {
+		fmt.Println(category)
+	})
+
+	return []Category{}, nil
+}
+
 /*
 GetAvailableModules returns the modules currently listed under "Studying" > "Register for modules and courses".
 
