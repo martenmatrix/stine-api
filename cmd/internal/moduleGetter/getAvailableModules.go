@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"strings"
 )
 
 type Category struct {
@@ -39,11 +40,28 @@ func (module *Module) Refresh() {
 }
 
 func extractCategories(doc *goquery.Document) ([]Category, error) {
-	doc.Find("ul:not([class]) li").Each(func(index int, category *goquery.Selection) {
-		fmt.Println(category)
+	var categories []Category
+
+	// extract the category list anchor entries
+	doc.Find("ul:not([class]) li a").Each(func(index int, category *goquery.Selection) {
+		// title is always text inside anchor
+		title := category.Text()
+		// something unnecessary whitespace is added in the title at the start or end, remove
+		title = strings.TrimSpace(title)
+		// href is link to the category page
+		link, exists := category.Attr("href")
+
+		if !exists {
+			fmt.Println("Some categories may be missing, as there was an anchor with a missing href")
+		}
+
+		categories = append(categories, Category{
+			Title: title,
+			Url:   link,
+		})
 	})
 
-	return []Category{}, nil
+	return categories, nil
 }
 
 /*
@@ -59,12 +77,27 @@ The registerURL represents the URL, which re-directs to "Studying" > "Register f
 
 The client is the HTTP Client the requests should be executed with.
 */
-func GetAvailableModules(depth int, registerURL string) ([]Category, error) {
 func GetAvailableModules(depth int, registerURL string, client *http.Client) ([]Category, error) {
-	resp, err := client.Get(registerURL)
-	if err != nil {
-		return nil, err
+	resp, errGet := client.Get(registerURL)
+	if errGet != nil {
+		return nil, errGet
 	}
+
+	doc, errDoc := goquery.NewDocumentFromReader(resp.Body)
+	if errDoc != nil {
+		return nil, errDoc
+	}
+
+	categories, errCat := extractCategories(doc)
+	if errCat != nil {
+		return nil, errCat
+	}
+
+	for range categories {
+
+	}
+
+	fmt.Println(categories)
 
 	return []Category{}, nil
 }
