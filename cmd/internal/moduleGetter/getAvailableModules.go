@@ -156,8 +156,11 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 	initialCategory.Categories = &categories
 	initialCategory.Modules = &modules
 
+	currDepth := 0
+
 	// while there are categories left, traverse trough them
-	for len(categories) > 0 {
+	for len(categories) > 0 && currDepth < depth {
+		currDepth++
 		// iterate over every category in category list
 		for _, category := range categories {
 			// store old category
