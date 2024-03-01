@@ -289,8 +289,10 @@ func TestGetAvailableModules(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	shouldReturn := []Category{
-		{
+	shouldReturn := Category{
+		Title: "initalPage",
+		Url:   fakeServer.URL,
+		Categories: &[]Category{{
 			Title: "Category Cool",
 			Url:   "/scripts/category.org",
 			Categories: &[]Category{
@@ -345,7 +347,7 @@ func TestGetAvailableModules(t *testing.T) {
 				},
 			},
 		},
-	}
+		}}
 
 	equal := reflect.DeepEqual(modules, shouldReturn)
 
