@@ -11,37 +11,8 @@ import (
 func TestGetAvailableModules(t *testing.T) {
 	var requestCounter int
 
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		requestCounter++
-
-		switch {
-		case requestCounter == 1:
-			_, err := writer.Write([]byte(`
-				<!--First Page without modules-->
-				<ul class="one two">
-    				<li>
-        				::marker
-        				<a href="/scripts/category111.org">No Section</a>
-    				</li>
-    				<li>
-        				::marker
-        			<a href="/scripts/nice11111.org">Not a Section</a>
-    				</li>
-				</ul>
-		
-				<ul>
-    				<li>
-        				::marker
-        				<a href="/scripts/category.org">Category Cool</a>
-    				</li>
-				</ul>
-			`))
-			if err != nil {
-				t.Errorf(err.Error())
-			}
-
-		case requestCounter == 2:
-			_, err := writer.Write([]byte(`
+	secondCategoryPage := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		_, err := writer.Write([]byte(`
 				<!--Second Page with categories and modules-->
 				
 				<!--Categories-->
@@ -282,11 +253,35 @@ func TestGetAvailableModules(t *testing.T) {
 				</tr>
 			`))
 
-			if err != nil {
-				t.Errorf(err.Error())
-			}
+		if err != nil {
+			t.Errorf(err.Error())
 		}
+	}))
 
+	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		_, err := writer.Write([]byte(fmt.Sprintf(`
+				<!--First Page without modules-->
+				<ul class="one two">
+    				<li>
+        				::marker
+        				<a href="/scripts/category111.org">No Section</a>
+    				</li>
+    				<li>
+        				::marker
+        			<a href="/scripts/nice11111.org">Not a Section</a>
+    				</li>
+				</ul>
+		
+				<ul>
+    				<li>
+        				::marker
+        				<a href="%s">Category Cool</a>
+    				</li>
+				</ul>
+			`, secondCategoryPage.URL)))
+		if err != nil {
+			t.Errorf(err.Error())
+		}
 	}))
 
 	modules, err := GetAvailableModules(2, fakeServer.URL, &http.Client{})
