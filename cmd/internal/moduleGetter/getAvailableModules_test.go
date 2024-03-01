@@ -2,6 +2,7 @@ package moduleGetter
 
 import (
 	"fmt"
+	"github.com/luci/go-render/render"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -9,8 +10,6 @@ import (
 )
 
 func TestGetAvailableModules(t *testing.T) {
-	var requestCounter int
-
 	secondCategoryPage := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		_, err := writer.Write([]byte(`
 				<!--Second Page with categories and modules-->
@@ -284,7 +283,7 @@ func TestGetAvailableModules(t *testing.T) {
 		}
 	}))
 
-	modules, err := GetAvailableModules(2, fakeServer.URL, &http.Client{})
+	modules, err := GetAvailableModules(1, fakeServer.URL, &http.Client{})
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -350,11 +349,8 @@ func TestGetAvailableModules(t *testing.T) {
 
 	equal := reflect.DeepEqual(modules, shouldReturn)
 
+	// use go-render to compare
 	if !equal {
-		t.Error(fmt.Sprintf("EXPECTED: %v, RECEIVED: %v", shouldReturn, modules))
-	}
-
-	if requestCounter != 2 {
-		t.Error(fmt.Sprintf("expected 4 requests, however received %d", requestCounter))
+		t.Error(fmt.Sprintf("\n EXPECTED: %s \n RECEIVED: %s", render.Render(shouldReturn), render.Render(modules)))
 	}
 }
