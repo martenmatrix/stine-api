@@ -27,6 +27,8 @@ func TestGetAvailableModules(t *testing.T) {
 				</ul>
 				
 				<!--Modules-->
+				<table>
+				<tbody>
 				<tr>
 					<!--logo column-->
 					<td class="tbsubhead"> <!-- FIXME TDs ... Module Level ?? -->
@@ -250,6 +252,8 @@ func TestGetAvailableModules(t *testing.T) {
 				
 					<!--COURSE END -->
 				</tr>
+				</tbody>
+				</table>
 			`))
 
 		if err != nil {
