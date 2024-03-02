@@ -68,9 +68,9 @@ func extractEvents(moduleHeading *goquery.Selection) ([]Event, error) {
 	var events []Event
 
 	// get all following trs, until next module starts, those are the events
-	modules := moduleHeading.NextUntil("tr td .tbsubhead")
+	// initial tr is not included
+	modules := moduleHeading.NextUntil("tr:has(td.tbsubhead)")
 	modules.Each(func(i int, selection *goquery.Selection) {
-		fmt.Println(1)
 	})
 
 	return events, nil
