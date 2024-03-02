@@ -3,6 +3,7 @@ package moduleGetter
 import (
 	"fmt"
 	"github.com/luci/go-render/render"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -242,7 +243,7 @@ func TestGetAvailableModules(t *testing.T) {
 				
 				
 					<td class="tbdata">
-						07.03.2024<br>240 | 99
+						07.03.2024<br>- | 99
 					</td>
 				
 					<td class="tbdata rw-qbf">
@@ -344,7 +345,7 @@ func TestGetAvailableModules(t *testing.T) {
 							Id:              "64-091",
 							Title:           "Exercises Distributed Systems and Systems Security",
 							Link:            "", // TODO needs to add a link, if user can register for the module
-							MaxCapacity:     240,
+							MaxCapacity:     math.Inf(1),
 							CurrentCapacity: 99,
 						},
 					},
