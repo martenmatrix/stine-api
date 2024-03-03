@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -64,6 +66,60 @@ func extractCategories(doc *goquery.Document) ([]Category, error) {
 	return categories, nil
 }
 
+func isEvent(eventSelection *goquery.Selection) bool {
+	html, err := eventSelection.Html()
+	if err != nil {
+		fmt.Println("Could not parse HTML and evaluate if selection is an event, returning false")
+		return false
+	}
+
+	return strings.Contains(html, "<!--logo column-->")
+}
+
+func extractEvent(eventSelection *goquery.Selection) (Event, error) {
+	paragraphs := eventSelection.Find("p")
+
+	id := paragraphs.Find("a[name='eventLink']").Text()[0:6]
+
+	title := paragraphs.Find(".eventTitle").Text()
+	// something unnecessary whitespace is added in the title at the start or end, remove
+	title = strings.TrimSpace(title)
+
+	link, exists := eventSelection.Find("a").Attr("href")
+	if !exists {
+		link = ""
+	}
+
+	// extract capacity with regex
+	capacityString, htmlErr := eventSelection.Find(".tbdata:has(br)").Html()
+	if htmlErr != nil {
+		return Event{}, htmlErr
+	}
+	placesReg := regexp.MustCompile("\\d+ \\| \\d+")
+	dataWithoutDate := placesReg.FindString(capacityString)
+	dataWithoutWhitespace := strings.ReplaceAll(dataWithoutDate, " ", "")
+	dataInSlice := strings.Split(dataWithoutWhitespace, "|")
+
+	// TODO some capacities are marked with - => return Infinity
+
+	maxCap, maxCapErr := strconv.ParseFloat(dataInSlice[0], 64)
+	if maxCapErr != nil {
+		return Event{}, maxCapErr
+	}
+	usedCap, usedCapErr := strconv.ParseFloat(dataInSlice[1], 64)
+	if usedCapErr != nil {
+		return Event{}, usedCapErr
+	}
+
+	return Event{
+		Id:              id,
+		Title:           title,
+		Link:            link,
+		MaxCapacity:     maxCap,
+		CurrentCapacity: usedCap,
+	}, nil
+}
+
 func extractEvents(moduleHeading *goquery.Selection) ([]Event, error) {
 	var events []Event
 
@@ -71,6 +127,15 @@ func extractEvents(moduleHeading *goquery.Selection) ([]Event, error) {
 	// initial tr is not included
 	modules := moduleHeading.NextUntil("tr:has(td.tbsubhead)")
 	modules.Each(func(i int, selection *goquery.Selection) {
+		// do not iterate over title headings from modules
+		if isEvent(selection) {
+			event, err := extractEvent(selection)
+			if err != nil {
+				fmt.Println("Unable to parse an event, skipping")
+			} else {
+				events = append(events, event)
+			}
+		}
 	})
 
 	return events, nil
