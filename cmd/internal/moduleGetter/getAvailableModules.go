@@ -10,10 +10,10 @@ import (
 )
 
 type Category struct {
-	Title      string      // Title of the Category e.g. "Compulsory Modules Informatics"
-	Url        string      // Link associated to title anchor
-	Categories *[]Category // All categories, which are listed under the current category
-	Modules    *[]Module   // All Module's the category contains
+	Title      string     // Title of the Category e.g. "Compulsory Modules Informatics"
+	Url        string     // Link associated to title anchor
+	Categories []Category // All categories, which are listed under the current category
+	Modules    []Module   // All Module's the category contains
 }
 
 // Module represents a module open for registration.
@@ -26,11 +26,11 @@ type Module struct {
 
 // Event represents events of a module like exercises or lectures.
 type Event struct {
-	Id              string // ID of the event in the following format 64-010
-	Title           string // Title of the event
-	Link            string // The link a user gets re-directed to, if he clicks the title
-	MaxCapacity     int    // Maximum student capacity of the event
-	CurrentCapacity int    // Currently registered students for the event
+	Id              string  // ID of the event in the following format 64-010
+	Title           string  // Title of the event
+	Link            string  // The link a user gets re-directed to, if he clicks the title
+	MaxCapacity     float64 // Maximum student capacity of the event
+	CurrentCapacity float64 // Currently registered students for the event
 }
 
 /*
@@ -177,6 +177,76 @@ func extractModules(doc *goquery.Document) ([]Module, error) {
 	return modules, nil
 }
 
+func getCategory(title string, url string, doc *goquery.Document) (Category, error) {
+	var category Category
+
+	// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
+	containsCategories, errCat := extractCategories(doc)
+	if errCat != nil {
+		return Category{}, errCat
+	}
+
+	// extract modules from newly fetched page
+	containsModules, errMod := extractModules(doc)
+	if errMod != nil {
+		return Category{}, errMod
+	}
+
+	category.Title = title
+	category.Url = url
+	// set categories and modules of current category
+	category.Categories = containsCategories
+	category.Modules = containsModules
+
+	return category, nil
+}
+
+var depth int
+
+// recursively gets all child categories of the passed category and returns the edited passed category struct
+// returned int is current depth
+func getChildCategories(client *http.Client, category Category, maxDepth int) (Category, error) {
+	if depth >= maxDepth {
+		// break
+		return category, nil
+	}
+
+	var childCategories []Category
+
+	for _, category := range category.Categories {
+		// fetch new site category links to
+		resp, errGet := client.Get(category.Url)
+		if errGet != nil {
+			return Category{}, errGet
+		}
+
+		// convert to goquery doc
+		doc, docErr := goquery.NewDocumentFromReader(resp.Body)
+		if docErr != nil {
+			return Category{}, docErr
+		}
+
+		// needs to be child of prev category
+		parsedCategory, parseErr := getCategory(category.Title, category.Url, doc)
+		if parseErr != nil {
+			return Category{}, parseErr
+		}
+
+		// parse every child category and add it to struct
+		childCategories = append(childCategories, parsedCategory)
+
+		depth++
+		_, err := getChildCategories(client, parsedCategory, maxDepth)
+		if err != nil {
+			return Category{}, err
+		}
+	}
+	// store new categories as child
+	category.Categories = childCategories
+
+	return category, nil
+}
+
 /*
 GetAvailableModules returns the modules currently listed under "Studying" > "Register for modules and courses".
 
@@ -191,10 +261,6 @@ The registerURL represents the URL, which re-directs to "Studying" > "Register f
 The client is the HTTP Client the requests should be executed with.
 */
 func GetAvailableModules(depth int, registerURL string, client *http.Client) (Category, error) {
-	initialCategory := Category{
-		Title: "initialPage",
-		Url:   registerURL,
-	}
 
 	resp, errGet := client.Get(registerURL)
 	if errGet != nil {
@@ -207,59 +273,15 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 	}
 
 	// handle first page
-	categories, errCat := extractCategories(doc)
-	if errCat != nil {
-		return Category{}, errCat
+	firstCategory, firstCatErr := getCategory("initial", "", doc)
+	if firstCatErr != nil {
+		return Category{}, firstCatErr
 	}
 
-	modules, errMod := extractModules(doc)
-	if errMod != nil {
-		return Category{}, errMod
+	withSubCategories, err := getChildCategories(client, firstCategory, 1)
+	if err != nil {
+		return Category{}, nil
 	}
 
-	// save first categories and modules
-	initialCategory.Categories = &categories
-	initialCategory.Modules = &modules
-
-	currDepth := 0
-
-	// while there are categories left, traverse trough them
-	for len(categories) > 0 && currDepth < depth {
-		currDepth++
-		// iterate over every category in category list
-		for _, category := range categories {
-			// store old category
-			oldCategory := category
-
-			// fetch new site category links to
-			resp, errGet := client.Get(category.Url)
-			if errGet != nil {
-				return Category{}, errGet
-			}
-
-			// convert to goquery doc
-			newDoc, newDocErr := goquery.NewDocumentFromReader(resp.Body)
-			if newDocErr != nil {
-				return Category{}, newDocErr
-			}
-
-			// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
-			categories, errCat = extractCategories(newDoc)
-			if errCat != nil {
-				return Category{}, errCat
-			}
-
-			// extract modules from newly fetched page
-			modules, errMod := extractModules(newDoc)
-			if errMod != nil {
-				return Category{}, errMod
-			}
-
-			// set categories and modules of current category
-			oldCategory.Categories = &categories
-			oldCategory.Modules = &modules
-		}
-	}
-
-	return initialCategory, nil
+	return withSubCategories, nil
 }

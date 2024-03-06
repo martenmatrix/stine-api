@@ -295,26 +295,26 @@ func TestGetAvailableModules(t *testing.T) {
 	}
 
 	shouldReturn := Category{
-		Title: "initalPage",
-		Url:   fakeServer.URL,
-		Categories: &[]Category{{
+		Title: "",
+		Url:   "",
+		Categories: []Category{{
 			Title: "Category Cool",
 			Url:   "/scripts/category.org",
-			Categories: &[]Category{
+			Categories: []Category{
 				{
 					Title:      "Category Cool",
 					Url:        "/scripts/category.org",
-					Categories: &[]Category{},
-					Modules:    &[]Module{},
+					Categories: []Category{},
+					Modules:    []Module{},
 				},
 				{
 					Title:      "Category Nice",
 					Url:        "/scripts/nice.org",
-					Categories: &[]Category{},
-					Modules:    &[]Module{},
+					Categories: []Category{},
+					Modules:    []Module{},
 				},
 			},
-			Modules: &[]Module{
+			Modules: []Module{
 				{
 					Title:            "Software Development II (SuSe 23)",
 					Teacher:          "Peter Lustig; Franz Karen",
