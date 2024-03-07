@@ -295,7 +295,7 @@ func TestGetAvailableModules(t *testing.T) {
 	}
 
 	shouldReturn := Category{
-		Title: "",
+		Title: "initial",
 		Url:   "",
 		Categories: []Category{{
 			Title: "Category Cool",
