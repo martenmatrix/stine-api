@@ -3,6 +3,7 @@ package moduleGetter
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -95,20 +96,35 @@ func extractEvent(eventSelection *goquery.Selection) (Event, error) {
 	if htmlErr != nil {
 		return Event{}, htmlErr
 	}
-	placesReg := regexp.MustCompile("\\d+ \\| \\d+")
+	placesReg := regexp.MustCompile("(\\d+|-) \\| (\\d+|-)") // regex matches "number OR - | number OR -"
 	dataWithoutDate := placesReg.FindString(capacityString)
 	dataWithoutWhitespace := strings.ReplaceAll(dataWithoutDate, " ", "")
 	dataInSlice := strings.Split(dataWithoutWhitespace, "|")
 
-	// TODO some capacities are marked with - => return Infinity
+	maxCapString := dataInSlice[0]
+	usedCapString := dataInSlice[1]
 
-	maxCap, maxCapErr := strconv.ParseFloat(dataInSlice[0], 64)
-	if maxCapErr != nil {
-		return Event{}, maxCapErr
+	var maxCap float64
+	var usedCap float64
+
+	if maxCapString == "-" {
+		maxCap = math.Inf(1)
+	} else {
+		var maxCapErr error
+		maxCap, maxCapErr = strconv.ParseFloat(maxCapString, 64)
+		if maxCapErr != nil {
+			return Event{}, maxCapErr
+		}
 	}
-	usedCap, usedCapErr := strconv.ParseFloat(dataInSlice[1], 64)
-	if usedCapErr != nil {
-		return Event{}, usedCapErr
+
+	if usedCapString == "-" {
+		usedCap = math.Inf(1)
+	} else {
+		var usedCapErr error
+		usedCap, usedCapErr = strconv.ParseFloat(usedCapString, 64)
+		if usedCapErr != nil {
+			return Event{}, usedCapErr
+		}
 	}
 
 	return Event{
