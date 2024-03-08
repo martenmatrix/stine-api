@@ -296,7 +296,7 @@ func TestGetAvailableModules(t *testing.T) {
 
 	shouldReturn := Category{
 		Title: "initial",
-		Url:   "",
+		Url:   fakeServer.URL,
 		Categories: []Category{{
 			Title: "Category Cool",
 			Url:   secondCategoryPage.URL,
@@ -360,4 +360,8 @@ func TestGetAvailableModules(t *testing.T) {
 	if !equal {
 		t.Error(fmt.Sprintf("\n EXPECTED: %s \n RECEIVED: %s", render.Render(shouldReturn), render.Render(modules)))
 	}
+}
+
+func TestRefreshModule(t *testing.T) {
+
 }
