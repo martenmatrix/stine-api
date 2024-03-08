@@ -299,19 +299,19 @@ func TestGetAvailableModules(t *testing.T) {
 		Url:   "",
 		Categories: []Category{{
 			Title: "Category Cool",
-			Url:   "/scripts/category.org",
+			Url:   secondCategoryPage.URL,
 			Categories: []Category{
 				{
 					Title:      "Category Cool",
 					Url:        "/scripts/category.org",
-					Categories: []Category{},
-					Modules:    []Module{},
+					Categories: []Category(nil),
+					Modules:    []Module(nil),
 				},
 				{
 					Title:      "Category Nice",
 					Url:        "/scripts/nice.org",
-					Categories: []Category{},
-					Modules:    []Module{},
+					Categories: []Category(nil),
+					Modules:    []Module(nil),
 				},
 			},
 			Modules: []Module{
