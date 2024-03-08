@@ -35,10 +35,9 @@ type Event struct {
 }
 
 /*
-Refresh re-fetches the data of a module from the STiNE servers. It is only recommended when fast speed is required
-or bandwidth needs to be saved. Otherwise, run GetAvailableModules again.
+Refresh re-fetches the data of a module from the STiNE servers. It will return the re-fetched module with the newly specified depth. The session of the initial request cannot be expired.
 */
-func (module *Module) Refresh() {
+func (module *Module) Refresh(depth int) (Module, error) {
 	// session no should not have changed, otherwise session number in url is not valid anymore
 }
 
