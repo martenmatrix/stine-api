@@ -323,14 +323,14 @@ func TestGetAvailableModules(t *testing.T) {
 						{
 							Id:              "64-010",
 							Title:           "Lecture Software Development II: Object-oriented Programming and Modelling",
-							Link:            "",
+							Link:            "/scripts/dwdwd",
 							MaxCapacity:     550,
 							CurrentCapacity: 162,
 						},
 						{
 							Id:              "64-012",
 							Title:           "Exercises Software Development II",
-							Link:            "",
+							Link:            "/scripts/scscedw",
 							MaxCapacity:     458,
 							CurrentCapacity: 130,
 						},
@@ -344,7 +344,7 @@ func TestGetAvailableModules(t *testing.T) {
 						{
 							Id:              "64-091",
 							Title:           "Exercises Distributed Systems and Systems Security",
-							Link:            "", // TODO needs to add a link, if user can register for the module
+							Link:            "/scripts/cfefef3",
 							MaxCapacity:     math.Inf(1),
 							CurrentCapacity: 99,
 						},
