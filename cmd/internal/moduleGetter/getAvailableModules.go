@@ -185,8 +185,20 @@ func extractModules(doc *goquery.Document) ([]Module, error) {
 	return modules, nil
 }
 
-func getCategory(title string, url string, doc *goquery.Document) (Category, error) {
+func getCategory(client *http.Client, title string, url string) (Category, error) {
 	var category Category
+
+	// fetch new site category links to
+	resp, errGet := client.Get(url)
+	if errGet != nil {
+		return Category{}, errGet
+	}
+
+	// convert to goquery doc
+	doc, docErr := goquery.NewDocumentFromReader(resp.Body)
+	if docErr != nil {
+		return Category{}, docErr
+	}
 
 	// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
 	containsCategories, errCat := extractCategories(doc)
@@ -222,20 +234,8 @@ func getChildCategories(client *http.Client, category Category, maxDepth int) (C
 	var childCategories []Category
 
 	for _, category := range category.Categories {
-		// fetch new site category links to
-		resp, errGet := client.Get(category.Url)
-		if errGet != nil {
-			return Category{}, errGet
-		}
-
-		// convert to goquery doc
-		doc, docErr := goquery.NewDocumentFromReader(resp.Body)
-		if docErr != nil {
-			return Category{}, docErr
-		}
-
 		// needs to be child of prev category
-		parsedCategory, parseErr := getCategory(category.Title, category.Url, doc)
+		parsedCategory, parseErr := getCategory(client, category.Title, category.Url)
 		if parseErr != nil {
 			return Category{}, parseErr
 		}
@@ -269,19 +269,8 @@ The registerURL represents the URL, which re-directs to "Studying" > "Register f
 The client is the HTTP Client the requests should be executed with.
 */
 func GetAvailableModules(depth int, registerURL string, client *http.Client) (Category, error) {
-
-	resp, errGet := client.Get(registerURL)
-	if errGet != nil {
-		return Category{}, errGet
-	}
-
-	doc, errDoc := goquery.NewDocumentFromReader(resp.Body)
-	if errDoc != nil {
-		return Category{}, errDoc
-	}
-
 	// handle first page
-	firstCategory, firstCatErr := getCategory("initial", "", doc)
+	firstCategory, firstCatErr := getCategory(client, "initial", registerURL)
 	if firstCatErr != nil {
 		return Category{}, firstCatErr
 	}
