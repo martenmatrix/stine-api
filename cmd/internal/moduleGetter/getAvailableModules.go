@@ -19,10 +19,10 @@ type Category struct {
 
 // Module represents a module open for registration.
 type Module struct {
-	Title            string // Title of the module
-	Teacher          string // Teachers of the module
-	RegistrationLink string // The link a  user gets re-directed to, if he clicks the red "Register" button
-	Events           []Event
+	Title            string  // Title of the module
+	Teacher          string  // Teachers of the module
+	RegistrationLink string  // Link a user gets re-directed to, if he wants to register for the module. It will return an empty string, if the user has already registered for the module
+	Events           []Event // All events, which are correlated to the module like exercises and lectures
 }
 
 // Event represents events of a module like exercises or lectures.
