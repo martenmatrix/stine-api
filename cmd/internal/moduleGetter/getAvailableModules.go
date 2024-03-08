@@ -34,13 +34,6 @@ type Event struct {
 	CurrentCapacity float64 // Currently registered students for the event
 }
 
-/*
-Refresh re-fetches the data of a module from the STiNE servers. It will return the re-fetched module with the newly specified depth. The session of the initial request cannot be expired.
-*/
-func (module *Module) Refresh(depth int) (Module, error) {
-	// session no should not have changed, otherwise session number in url is not valid anymore
-}
-
 func extractCategories(doc *goquery.Document) ([]Category, error) {
 	var categories []Category
 
@@ -299,4 +292,13 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 	}
 
 	return withSubCategories, nil
+}
+
+/*
+Refresh re-fetches the data of a module from the STiNE servers. It will return the re-fetched module with the newly specified depth. The session of the initial request cannot be expired.
+*/
+func (module *Module) Refresh(depth int) (Module, error) {
+	// session no should not have changed, otherwise session number in url is not valid anymore
+
+	return Module{}, nil
 }
