@@ -275,7 +275,7 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 		return Category{}, firstCatErr
 	}
 
-	withSubCategories, err := getChildCategories(client, firstCategory, 1)
+	withSubCategories, err := getChildCategories(client, firstCategory, depth)
 	if err != nil {
 		return Category{}, nil
 	}
