@@ -2,6 +2,8 @@ package moduleGetter
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/luci/go-render/render"
 	"math"
 	"net/http"
@@ -354,7 +356,7 @@ func TestGetAvailableModules(t *testing.T) {
 		},
 		}}
 
-	equal := reflect.DeepEqual(modules, shouldReturn)
+	equal := cmp.Equal(modules, shouldReturn, cmpopts.IgnoreUnexported(Category{}))
 
 	// use go-render to compare
 	if !equal {
