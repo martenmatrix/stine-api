@@ -5,6 +5,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/luci/go-render/render"
+	"github.com/martenmatrix/stine-api/cmd/internal/stineURL"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -304,13 +305,13 @@ func TestGetAvailableModules(t *testing.T) {
 			Categories: []Category{
 				{
 					Title:      "Category Cool",
-					Url:        "/scripts/category.org",
+					Url:        stineURL.Url + "/scripts/category.org",
 					Categories: []Category(nil),
 					Modules:    []Module(nil),
 				},
 				{
 					Title:      "Category Nice",
-					Url:        "/scripts/nice.org",
+					Url:        stineURL.Url + "/scripts/nice.org",
 					Categories: []Category(nil),
 					Modules:    []Module(nil),
 				},
@@ -319,19 +320,19 @@ func TestGetAvailableModules(t *testing.T) {
 				{
 					Title:            "Software Development II (SuSe 23)",
 					Teacher:          "Peter Lustig; Franz Karen",
-					RegistrationLink: "/scripts/mgrqispi.dll?REGISTERFORMODULE",
+					RegistrationLink: stineURL.Url + "/scripts/mgrqispi.dll?REGISTERFORMODULE",
 					Events: []Event{
 						{
 							Id:              "64-010",
 							Title:           "Lecture Software Development II: Object-oriented Programming and Modelling",
-							Link:            "/scripts/dwdwd",
+							Link:            stineURL.Url + "/scripts/dwdwd",
 							MaxCapacity:     550,
 							CurrentCapacity: 162,
 						},
 						{
 							Id:              "64-012",
 							Title:           "Exercises Software Development II",
-							Link:            "/scripts/scscedw",
+							Link:            stineURL.Url + "/scripts/scscedw",
 							MaxCapacity:     458,
 							CurrentCapacity: 130,
 						},
@@ -345,7 +346,7 @@ func TestGetAvailableModules(t *testing.T) {
 						{
 							Id:              "64-091",
 							Title:           "Exercises Distributed Systems and Systems Security",
-							Link:            "/scripts/cfefef3",
+							Link:            stineURL.Url + "/scripts/cfefef3",
 							MaxCapacity:     math.Inf(1),
 							CurrentCapacity: 99,
 						},
@@ -377,7 +378,6 @@ func TestRefreshModule(t *testing.T) {
 		case 1:
 			maxCapacity = 20000
 			usedCapacity = 187
-
 		}
 
 		_, err := writer.Write([]byte(fmt.Sprintf(`
@@ -512,7 +512,7 @@ func TestRefreshModule(t *testing.T) {
 						{
 							Id:              "64-091",
 							Title:           "Exercises Distributed Systems and Systems Security",
-							Link:            "/scripts/cfefef3",
+							Link:            stineURL.Url + "/scripts/cfefef3",
 							MaxCapacity:     100,
 							CurrentCapacity: 20,
 						},
@@ -549,7 +549,7 @@ func TestRefreshModule(t *testing.T) {
 					{
 						Id:              "64-091",
 						Title:           "Exercises Distributed Systems and Systems Security",
-						Link:            "/scripts/cfefef3",
+						Link:            stineURL.Url + "/scripts/cfefef3",
 						MaxCapacity:     20000,
 						CurrentCapacity: 187,
 					},
