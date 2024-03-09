@@ -1,4 +1,4 @@
-package stineapi
+package auth
 
 import (
 	"golang.org/x/net/publicsuffix"
@@ -14,7 +14,7 @@ func (t *myTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-func getClient() *http.Client {
+func GetClient() *http.Client {
 	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	if err != nil {
 		log.Fatal(err)
