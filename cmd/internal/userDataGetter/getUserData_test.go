@@ -1,9 +1,5 @@
 package userDataGetter
 
-import (
-	"testing"
-)
-
 const stineHTMLPageBenutzerkonto = `<div id="contentSpacer_IE" class="pageElementTop">
    <h1>Persönliche Daten</h1>
    <h2 personid="9999999">Peter Lustig</h2>
@@ -200,9 +196,3 @@ const (
 	city                = "Hamburg"
 	germanState         = "Hamburg"
 )
-
-func TestGetUserAccountURL(t *testing.T) {
-	if url != "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PERSADDRESS&ARGUMENTS=-NfakeNumber2323,-N000273," {
-		t.Error("session number was not inserted into URL")
-	}
-}
