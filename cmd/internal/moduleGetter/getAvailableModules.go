@@ -257,7 +257,7 @@ func getChildCategories(client *http.Client, category Category, maxDepth int) (C
 /*
 GetAvailableModules returns the modules currently listed under "Studying" > "Register for modules and courses".
 
-The depth indicates how deep different modules are nested within a category.
+The depth indicates how deep different categories are nested within a category.
 
 For instance, at a depth of 2, a structure like 'Computer Science' -> 'Elective Area' -> 'Module 1' would be displayed.
 However, a further nested structure like 'Computer Science' -> 'Elective Area' -> 'Abroad' -> 'Module 2' would not be shown,
