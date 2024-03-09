@@ -218,6 +218,7 @@ func getCategory(client *http.Client, title string, url string) (Category, error
 	// set categories and modules of current category
 	category.Categories = containsCategories
 	category.Modules = containsModules
+	category.clientUsed = client
 
 	return category, nil
 }
