@@ -1,6 +1,8 @@
-package stineapi
+package userDataGetter
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type general struct {
 	MatriculationNumber string
@@ -32,10 +34,10 @@ type UserData struct {
 	Statistics statistics
 }
 
-func (session *Session) getUserAccountURL() string {
-	return fmt.Sprintf("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PERSADDRESS&ARGUMENTS=-N%s,-N000273,", session.sessionNo)
+func getUserAccountURL(sessionNo string) string {
+	return fmt.Sprintf("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PERSADDRESS&ARGUMENTS=-N%s,-N000273,", sessionNo)
 }
 
-func (session *Session) GetUserData() (UserData, error) {
+func GetUserData() (UserData, error) {
 	return UserData{}, nil
 }

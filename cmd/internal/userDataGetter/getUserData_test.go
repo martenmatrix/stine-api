@@ -1,4 +1,4 @@
-package stineapi
+package userDataGetter
 
 import (
 	"testing"
@@ -202,10 +202,6 @@ const (
 )
 
 func TestGetUserAccountURL(t *testing.T) {
-	sess := NewSession()
-	sess.sessionNo = "fakeNumber2323"
-	url := sess.getUserAccountURL()
-
 	if url != "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PERSADDRESS&ARGUMENTS=-NfakeNumber2323,-N000273," {
 		t.Error("session number was not inserted into URL")
 	}
