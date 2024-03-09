@@ -285,10 +285,25 @@ func GetAvailableModules(depth int, registerURL string, client *http.Client) (Ca
 }
 
 /*
-Refresh re-fetches the data of a module from the STiNE servers. It will return the re-fetched module with the newly specified depth. The session of the initial request cannot be expired.
-*/
-func (module *Module) Refresh(depth int) (Module, error) {
-	// session no should not have changed, otherwise session number in url is not valid anymore
+Refresh re-fetches the data of a category from the STiNE servers. The session of the initial request cannot be expired.
 
-	return Module{}, nil
+In order to refresh a module, the whole category needs to be re-fetched, which makes a Refresh function for a module useless.
+
+The client is the HTTP client used for the request, needs to be authenticated on STiNE.
+
+The depth indicates how deep different categories are nested within a category.
+*/
+func (category *Category) Refresh(depth int) (Category, error) {
+	// handle first page
+	firstCategory, firstCatErr := getCategory(category.clientUsed, category.Title, category.Url)
+	if firstCatErr != nil {
+		return Category{}, firstCatErr
+	}
+
+	withSubCategories, err := getChildCategories(category.clientUsed, firstCategory, depth)
+	if err != nil {
+		return Category{}, nil
+	}
+
+	return withSubCategories, nil
 }
