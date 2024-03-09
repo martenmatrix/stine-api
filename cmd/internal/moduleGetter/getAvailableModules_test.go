@@ -8,7 +8,6 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
@@ -523,7 +522,7 @@ func TestRefreshModule(t *testing.T) {
 		},
 		}}
 
-	equal := reflect.DeepEqual(modules, shouldReturn)
+	equal := cmp.Equal(modules, shouldReturn, cmpopts.IgnoreUnexported(Category{}))
 
 	// use go-render to compare
 	if !equal {
@@ -538,32 +537,27 @@ func TestRefreshModule(t *testing.T) {
 	}
 
 	shouldReturnAfterRefresh := Category{
-		Title: "Category Cool",
-		Url:   firstCategoryPage.URL,
-		Categories: []Category{{
-			Title:      "Category Cool",
-			Url:        secondCategoryPage.URL,
-			Categories: []Category(nil),
-			Modules: []Module{
-				{
-					Title:            "Distributed Systems and Systems Security (SuSe 23)",
-					Teacher:          "Peter Parker 2",
-					RegistrationLink: "", // should be empty, as simulated user is already registered
-					Events: []Event{
-						{
-							Id:              "64-091",
-							Title:           "Exercises Distributed Systems and Systems Security",
-							Link:            "/scripts/cfefef3",
-							MaxCapacity:     20000,
-							CurrentCapacity: 187,
-						},
+		Title:      "Category Cool",
+		Url:        secondCategoryPage.URL,
+		Categories: []Category(nil),
+		Modules: []Module{
+			{
+				Title:            "Distributed Systems and Systems Security (SuSe 23)",
+				Teacher:          "Peter Parker 2",
+				RegistrationLink: "", // should be empty, as simulated user is already registered
+				Events: []Event{
+					{
+						Id:              "64-091",
+						Title:           "Exercises Distributed Systems and Systems Security",
+						Link:            "/scripts/cfefef3",
+						MaxCapacity:     20000,
+						CurrentCapacity: 187,
 					},
 				},
 			},
-		},
 		}}
 
-	equalRefresh := reflect.DeepEqual(categoryCoolRefresh, shouldReturnAfterRefresh)
+	equalRefresh := cmp.Equal(categoryCoolRefresh, shouldReturnAfterRefresh, cmpopts.IgnoreUnexported(Category{}))
 
 	// use go-render to compare
 	if !equalRefresh {
