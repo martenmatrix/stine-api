@@ -1,9 +1,10 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,23 +13,10 @@ import (
 
 func TestCreateModuleRegistration(t *testing.T) {
 	fakeRegistrationLink := "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGCOURSEMOD&ARGUMENTS=-N232343443351119,-N343449,-N343424234011169,-ADOFF,-N343434342285453,-N344343434341730,-N0,-N0,-N0,-AN,-N0"
-	ses := NewSession()
-	moduleReg := ses.CreateModuleRegistration(fakeRegistrationLink)
+	moduleReg := CreateModuleRegistration(fakeRegistrationLink)
 	if moduleReg.registrationLink != fakeRegistrationLink {
 		t.Error("registration link is not set on object")
 	}
-}
-
-func TestReferenceCopyOfSessionIsUsed(t *testing.T) {
-	ses := NewSession()
-	moduleReg := ses.CreateModuleRegistration("https://www.example.org")
-
-	ses.sessionNo = "changed"
-
-	if moduleReg.session.sessionNo != ses.sessionNo {
-		t.Error("no reference of session is used")
-	}
-
 }
 
 func TestGetRegistrationId(t *testing.T) {
@@ -37,11 +25,11 @@ func TestGetRegistrationId(t *testing.T) {
 		w.Write([]byte(`<input name="rgtr_id" value="` + fakeRegistrationId + `"/>`))
 	}),
 	)
-	ses := NewSession()
-	modReg := ses.CreateModuleRegistration("https://www.example.org")
+
+	modReg := CreateModuleRegistration("https://www.example.org")
 	modReg.registrationLink = fakeServer.URL
 
-	err := modReg.getRegistrationId()
+	err := modReg.getRegistrationId(&http.Client{})
 
 	if err != nil {
 		t.Error(err)
@@ -52,8 +40,7 @@ func TestGetRegistrationId(t *testing.T) {
 }
 
 func TestSetExamDate(t *testing.T) {
-	ses := NewSession()
-	moduleReg := ses.CreateModuleRegistration("https://www.example.org")
+	moduleReg := CreateModuleRegistration("https://www.example.org")
 
 	if moduleReg.examDate != 0 {
 		t.Error("default value for examDate should be 0")
@@ -100,12 +87,10 @@ func TestDoRegistrationRequest(t *testing.T) {
 	)
 	defer fakeServer.Close()
 
-	ses := NewSession()
-	reg := ses.CreateModuleRegistration("https://stine.uni-hamburg.de/")
-	reg.session.sessionNo = sessionNo
+	reg := CreateModuleRegistration("https://stine.uni-hamburg.de/")
 	reg.menuId = menuId
 	reg.registrationId = rgtrId
-	res, err := reg.doRegistrationRequest(fakeServer.URL)
+	res, err := reg.doRegistrationRequest(&http.Client{}, fakeServer.URL, sessionNo)
 	defer res.Body.Close()
 
 	if err != nil {
@@ -123,8 +108,7 @@ func TestGetTanRequiredStruct(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	ses := NewSession()
-	modReg := ses.CreateModuleRegistration("x")
+	modReg := CreateModuleRegistration("x")
 	tan := modReg.getTanRequiredStruct(fakeRes)
 
 	if err != nil {
@@ -141,12 +125,12 @@ func TestGetTanRequiredStruct(t *testing.T) {
 }
 
 func TestOnSelectExamPage(t *testing.T) {
-	onExamPage, errExamPage := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)))
+	onExamPage, errExamPage := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)))
 	if errExamPage != nil {
 		t.Errorf(errExamPage.Error())
 	}
 
-	notOnExamPage, errNotExamPage := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)))
+	notOnExamPage, errNotExamPage := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)))
 	if errNotExamPage != nil {
 		t.Errorf(errNotExamPage.Error())
 	}
@@ -182,8 +166,7 @@ func TestGetRbCode(t *testing.T) {
 
 func TestDoExamRegistrationRequest(t *testing.T) {
 	var valuesPassedCorrectly bool
-	ses := NewSession()
-	modReg := ses.CreateModuleRegistration("")
+	modReg := CreateModuleRegistration("")
 	modReg.SetExamDate(1)
 
 	formRequestMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +179,7 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 			r.Form.Get("APPNAME") == "CAMPUSNET" &&
 			r.Form.Get("PRGNAME") == "SAVEEXAMDETAILS" &&
 			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode" &&
-			r.Form.Get("sessionno") == modReg.session.sessionNo &&
+			r.Form.Get("sessionno") == "222" &&
 			r.Form.Get("menuid") == modReg.menuId &&
 			r.Form.Get("rgtr_id") == modReg.registrationId &&
 			r.Form.Get("mode") == "0001"
@@ -208,7 +191,7 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 	)
 	defer formRequestMock.Close()
 
-	_, err := modReg.doExamRegistrationRequest(formRequestMock.URL, "RBCODE23244")
+	_, err := modReg.doExamRegistrationRequest(&http.Client{}, formRequestMock.URL, "RBCODE23244", "222")
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -282,9 +265,8 @@ func TestRegister(t *testing.T) {
 		}
 	}))
 
-	ses := NewSession()
-	modReg := ses.CreateModuleRegistration(fakeServer.URL)
-	tanReq, err := modReg.Register()
+	modReg := CreateModuleRegistration(fakeServer.URL)
+	tanReq, err := modReg.Register(&http.Client{}, "342424")
 	if err != nil {
 		t.Errorf(err.Error())
 	}

@@ -1,10 +1,10 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestOniTANPage(t *testing.T) {
-	fakeRes1, err1 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
+	fakeRes1, err1 := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
 	if err1 != nil {
 		t.Errorf(err1.Error())
 	}
@@ -23,7 +23,7 @@ func TestOniTANPage(t *testing.T) {
 		t.Error("Expected: false, Received: true")
 	}
 
-	fakeRes2, err2 := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<html><body><span class=\"itan\"</body></html>")))
+	fakeRes2, err2 := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString("<html><body><span class=\"itan\"</body></html>")))
 	if err2 != nil {
 		t.Errorf(err2.Error())
 	}
@@ -52,7 +52,7 @@ func TestRemoveTanPrefix(t *testing.T) {
 
 func TestCheckForTanError(t *testing.T) {
 	fakeResponse := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(`<span class="error">a custom error msg<span>`)),
+		Body: io.NopCloser(bytes.NewBufferString(`<span class="error">a custom error msg<span>`)),
 	}
 	err := checkForTANError(fakeResponse)
 
@@ -70,10 +70,8 @@ func TestSendTan(t *testing.T) {
 	tan := &TanRequired{
 		registration: &ModuleRegistration{
 			registrationId: "23233",
-			session: &Session{
-				Client:    &http.Client{},
-				sessionNo: "324324",
-			},
+			client:         &http.Client{},
+			sessionNumber:  "324324",
 		},
 	}
 
@@ -87,7 +85,7 @@ func TestSendTan(t *testing.T) {
 			r.Form.Get("APPNAME") == "CampusNet" &&
 			r.Form.Get("PRGNAME") == "SAVEREGISTRATION" &&
 			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode,timetable_id,location_id" &&
-			r.Form.Get("sessionno") == tan.registration.session.sessionNo &&
+			r.Form.Get("sessionno") == tan.registration.sessionNumber &&
 			r.Form.Get("rgtr_id") == tan.registration.registrationId &&
 			r.Form.Get("mode") == "   0"
 

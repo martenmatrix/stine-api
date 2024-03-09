@@ -1,9 +1,10 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,20 +19,21 @@ type ModuleRegistration struct {
 	registrationId   string // id from a hidden input field, which is returned after requesting the registrationLink
 	menuId           string // menu id represents, which option is selected on the menu to the left on the stine page
 	examDate         int
-	session          *Session
+	sessionNumber    string
+	client           *http.Client
 }
 
-func (modReg *ModuleRegistration) doRegistrationRequest(reqUrl string) (*http.Response, error) {
+func (modReg *ModuleRegistration) doRegistrationRequest(client *http.Client, reqUrl string, sessionNo string) (*http.Response, error) {
 	formQuery := url.Values{
 		"Next":      {" Weiter"},
 		"APPNAME":   {"CampusNet"},
 		"PRGNAME":   {"SAVEREGISTRATIONDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id"},
-		"sessionno": {modReg.session.sessionNo},
+		"sessionno": {sessionNo},
 		"menuid":    {modReg.menuId},
 		"rgtr_id":   {modReg.registrationId},
 	}
-	res, err := modReg.session.Client.PostForm(reqUrl, formQuery)
+	res, err := client.PostForm(reqUrl, formQuery)
 
 	if err != nil {
 		return nil, err
@@ -60,20 +62,20 @@ func (modReg *ModuleRegistration) getExamMode() string {
 	return " 1"
 }
 
-func (modReg *ModuleRegistration) doExamRegistrationRequest(reqUrl string, rbCode string) (*http.Response, error) {
+func (modReg *ModuleRegistration) doExamRegistrationRequest(client *http.Client, reqUrl string, rbCode string, sessionNo string) (*http.Response, error) {
 	formQuery := url.Values{
 		"Next":      {" Next"},
 		rbCode:      {modReg.getExamMode()},
 		"APPNAME":   {"CAMPUSNET"},
 		"PRGNAME":   {"SAVEEXAMDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id,mode"},
-		"sessionno": {modReg.session.sessionNo},
+		"sessionno": {sessionNo},
 		"menuid":    {modReg.menuId},
 		"rgtr_id":   {modReg.registrationId},
 		"mode":      {"0001"},
 	}
 
-	res, err := modReg.session.Client.PostForm(reqUrl, formQuery)
+	res, err := client.PostForm(reqUrl, formQuery)
 
 	if err != nil {
 		return nil, err
@@ -82,8 +84,8 @@ func (modReg *ModuleRegistration) doExamRegistrationRequest(reqUrl string, rbCod
 	return res, nil
 }
 
-func (modReg *ModuleRegistration) getRegistrationId() error {
-	res, _ := modReg.session.Client.Get(modReg.registrationLink)
+func (modReg *ModuleRegistration) getRegistrationId(client *http.Client) error {
+	res, _ := client.Get(modReg.registrationLink)
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
@@ -148,18 +150,21 @@ func (modReg *ModuleRegistration) SetExamDate(examDate int) {
 Register sends the registration to the STiNE servers.
 If an iTAN is required, instead of nil a [TanRequired] is returned.
 */
-func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
+func (modReg *ModuleRegistration) Register(client *http.Client, sessionNumber string) (*TanRequired, error) {
+	modReg.client = client
+	modReg.sessionNumber = sessionNumber
+
 	var currentResponse *http.Response
 	var currentDocument *goquery.Document
 	var err error
 
-	modReg.registrationLink = modReg.session.RefreshSessionNumber(modReg.registrationLink)
-	err = modReg.getRegistrationId()
+	modReg.registrationLink = sessionNo.Refresh(modReg.registrationLink, sessionNumber)
+	err = modReg.getRegistrationId(client)
 	if err != nil {
 		return nil, err
 	}
 
-	currentResponse, err = modReg.doRegistrationRequest(modReg.registrationLink)
+	currentResponse, err = modReg.doRegistrationRequest(client, modReg.registrationLink, sessionNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +182,7 @@ func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 		if rbErr != nil {
 			return nil, rbErr
 		}
-		currentResponse, err = modReg.doExamRegistrationRequest(modReg.registrationLink, rbCode)
+		currentResponse, err = modReg.doExamRegistrationRequest(client, modReg.registrationLink, rbCode, sessionNumber)
 		if err != nil {
 			return nil, err
 		}
@@ -212,10 +217,9 @@ This function requires a registration link as an argument, which can be retrieve
 
 If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
 */
-func (session *Session) CreateModuleRegistration(registrationLink string) *ModuleRegistration {
+func CreateModuleRegistration(registrationLink string) *ModuleRegistration {
 	return &ModuleRegistration{
 		registrationLink: registrationLink,
-		session:          session,
 		menuId:           "000309",
 	}
 }

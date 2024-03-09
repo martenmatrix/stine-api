@@ -1,4 +1,4 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"errors"
@@ -43,11 +43,11 @@ func (tanReq *TanRequired) sendTAN(reqURL string, itanWithoutPrefix string) erro
 		"APPNAME":          {"CampusNet"},
 		"PRGNAME":          {"SAVEREGISTRATION"},
 		"ARGUMENTS":        {"sessionno,menuid,rgtr_id,mode,timetable_id,location_id"},
-		"sessionno":        {tanReq.registration.session.sessionNo},
+		"sessionno":        {tanReq.registration.sessionNumber},
 		"rgtr_id":          {tanReq.registration.registrationId},
 		"mode":             {"   0"},
 	}
-	res, err := tanReq.registration.session.Client.PostForm(reqURL, formQuery)
+	res, err := tanReq.registration.client.PostForm(reqURL, formQuery)
 	defer res.Body.Close()
 
 	if err != nil {
