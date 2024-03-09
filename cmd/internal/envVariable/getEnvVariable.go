@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func envVariable(key string) (string, error) {
+func EnvVariable(key string) (string, error) {
 
 	err := os.Setenv(key, "gopher")
 
