@@ -216,13 +216,11 @@ func getCategory(client *http.Client, title string, url string) (Category, error
 		return Category{}, docErr
 	}
 
-	// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
 	containsCategories, errCat := extractCategories(doc, client)
 	if errCat != nil {
 		return Category{}, errCat
 	}
 
-	// extract modules from newly fetched page
 	containsModules, errMod := extractModules(doc)
 	if errMod != nil {
 		return Category{}, errMod
