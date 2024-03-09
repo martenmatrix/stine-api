@@ -38,7 +38,9 @@ type Event struct {
 
 // check if string already contains http for testing purposes, otherwise add stine url before path
 func addSTiNEPrefix(path string) string {
-	if strings.Contains(path, "http://") {
+	if path == "" {
+		return ""
+	} else if strings.Contains(path, "http://") {
 		// do not add anything
 		return path
 	} else {
