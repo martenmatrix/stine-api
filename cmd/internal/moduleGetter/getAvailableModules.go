@@ -3,6 +3,7 @@ package moduleGetter
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/martenmatrix/stine-api/cmd/internal/stineURL"
 	"math"
 	"net/http"
 	"regexp"
@@ -35,6 +36,17 @@ type Event struct {
 	CurrentCapacity float64 // Currently registered students for the event
 }
 
+// check if string already contains http for testing purposes, otherwise add stine url before path
+func addSTiNEPrefix(path string) string {
+	if strings.Contains(path, "http://") {
+		// do not add anything
+		return path
+	} else {
+		// add stine path
+		return stineURL.Url + path
+	}
+}
+
 func extractCategories(doc *goquery.Document) ([]Category, error) {
 	var categories []Category
 
@@ -53,7 +65,7 @@ func extractCategories(doc *goquery.Document) ([]Category, error) {
 
 		categories = append(categories, Category{
 			Title: title,
-			Url:   link,
+			Url:   addSTiNEPrefix(link),
 		})
 	})
 
@@ -123,7 +135,7 @@ func extractEvent(eventSelection *goquery.Selection) (Event, error) {
 	return Event{
 		Id:              id,
 		Title:           title,
-		Link:            link,
+		Link:            addSTiNEPrefix(link),
 		MaxCapacity:     maxCap,
 		CurrentCapacity: usedCap,
 	}, nil
