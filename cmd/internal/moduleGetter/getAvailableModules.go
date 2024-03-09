@@ -11,10 +11,11 @@ import (
 )
 
 type Category struct {
-	Title      string     // Title of the Category e.g. "Compulsory Modules Informatics"
-	Url        string     // Link associated to title anchor
-	Categories []Category // All categories, which are listed under the current category
-	Modules    []Module   // All Module's the category contains
+	Title      string       // Title of the Category e.g. "Compulsory Modules Informatics"
+	Url        string       // Link associated to title anchor
+	Categories []Category   // All categories, which are listed under the current category
+	Modules    []Module     // All Module's the category contains
+	clientUsed *http.Client // The client used for the initial request
 }
 
 // Module represents a module open for registration.
