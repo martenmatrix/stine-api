@@ -1,4 +1,4 @@
-package stineapi
+package logger
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"net/http/httputil"
 )
 
-func logResponse(response *http.Response) {
+func LogResponse(response *http.Response) {
 	resDump, err := httputil.DumpResponse(response, true)
 	if err != nil {
 		log.Fatal(err)
@@ -16,7 +16,7 @@ func logResponse(response *http.Response) {
 	fmt.Printf("RESPONSE:\n%s\n", string(resDump))
 }
 
-func logRequest(request *http.Request) {
+func LogRequest(request *http.Request) {
 	reqDump, err := httputil.DumpRequest(request, true)
 	if err != nil {
 		log.Fatal(err)
