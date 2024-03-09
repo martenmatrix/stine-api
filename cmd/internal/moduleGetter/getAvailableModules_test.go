@@ -528,11 +528,15 @@ func TestRefreshModule(t *testing.T) {
 		t.Error(fmt.Sprintf("\n EXPECTED: %s \n RECEIVED: %s", render.Render(shouldReturn), render.Render(modules)))
 	}
 
-	categoryCool := shouldReturn.Categories[0]
+	categoryCool := modules.Categories[0]
 	categoryCoolRefresh, err := categoryCool.Refresh(0)
 
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	shouldReturnAfterRefresh := Category{
-		Title: "initial",
+		Title: "Category Cool",
 		Url:   firstCategoryPage.URL,
 		Categories: []Category{{
 			Title:      "Category Cool",
@@ -557,14 +561,10 @@ func TestRefreshModule(t *testing.T) {
 		},
 		}}
 
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	equalRefresh := reflect.DeepEqual(categoryCoolRefresh, shouldReturnAfterRefresh)
 
 	// use go-render to compare
 	if !equalRefresh {
-		t.Error(fmt.Sprintf("\n EXPECTED: %s \n RECEIVED: %s", render.Render(shouldReturn), render.Render(modules)))
+		t.Error(fmt.Sprintf("\n EXPECTED: %s \n RECEIVED: %s", render.Render(shouldReturnAfterRefresh), render.Render(categoryCoolRefresh)))
 	}
 }
