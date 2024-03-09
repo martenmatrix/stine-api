@@ -41,7 +41,7 @@ func extractCategories(doc *goquery.Document) ([]Category, error) {
 	doc.Find("ul:not([class]) li a").Each(func(index int, category *goquery.Selection) {
 		// title is always text inside anchor
 		title := category.Text()
-		// something unnecessary whitespace is added in the title at the start or end, remove
+		// sometimes unnecessary whitespace is added in the title at the start or end, remove
 		title = strings.TrimSpace(title)
 		// href is link to the category page
 		link, exists := category.Attr("href")
