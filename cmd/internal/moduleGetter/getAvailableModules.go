@@ -49,7 +49,7 @@ func addSTiNEPrefix(path string) string {
 	}
 }
 
-func extractCategories(doc *goquery.Document) ([]Category, error) {
+func extractCategories(doc *goquery.Document, client *http.Client) ([]Category, error) {
 	var categories []Category
 
 	// extract the category list anchor entries
@@ -66,8 +66,9 @@ func extractCategories(doc *goquery.Document) ([]Category, error) {
 		}
 
 		categories = append(categories, Category{
-			Title: title,
-			Url:   addSTiNEPrefix(link),
+			Title:      title,
+			Url:        addSTiNEPrefix(link),
+			clientUsed: client,
 		})
 	})
 
@@ -216,7 +217,7 @@ func getCategory(client *http.Client, title string, url string) (Category, error
 	}
 
 	// extract categories from newly fetched page and set as new categories, so while loop keeps iterating over them
-	containsCategories, errCat := extractCategories(doc)
+	containsCategories, errCat := extractCategories(doc, client)
 	if errCat != nil {
 		return Category{}, errCat
 	}
