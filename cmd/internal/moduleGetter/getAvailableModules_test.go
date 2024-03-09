@@ -262,7 +262,7 @@ func TestGetAvailableModules(t *testing.T) {
 		}
 	}))
 
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	firstCategoryPage := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		_, err := writer.Write([]byte(fmt.Sprintf(`
 				<!--First Page without modules-->
 				<ul class="one two">
@@ -288,7 +288,7 @@ func TestGetAvailableModules(t *testing.T) {
 		}
 	}))
 
-	modules, err := GetAvailableModules(1, fakeServer.URL, &http.Client{})
+	modules, err := GetAvailableModules(1, firstCategoryPage.URL, &http.Client{})
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -296,7 +296,7 @@ func TestGetAvailableModules(t *testing.T) {
 
 	shouldReturn := Category{
 		Title: "initial",
-		Url:   fakeServer.URL,
+		Url:   firstCategoryPage.URL,
 		Categories: []Category{{
 			Title: "Category Cool",
 			Url:   secondCategoryPage.URL,
