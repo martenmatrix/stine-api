@@ -314,6 +314,8 @@ func (category *Category) Refresh(depth int) (Category, error) {
 	}
 
 	withSubCategories, err := getChildCategories(category.clientUsed, firstCategory, depth)
+	// reset depth
+	depth = 0
 	if err != nil {
 		return Category{}, nil
 	}
