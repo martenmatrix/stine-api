@@ -224,7 +224,6 @@ func getCategory(client *http.Client, title string, url string) (Category, error
 var depth int
 
 // recursively gets all child categories of the passed category and returns the edited passed category struct
-// returned int is current depth
 func getChildCategories(client *http.Client, category Category, maxDepth int) (Category, error) {
 	if depth >= maxDepth {
 		// break
