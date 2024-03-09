@@ -238,8 +238,14 @@ func getCategory(client *http.Client, title string, url string) (Category, error
 
 var depth int
 
+func resetDepth() {
+	depth = 0
+}
+
 // recursively gets all child categories of the passed category and returns the edited passed category struct
 func getChildCategories(client *http.Client, category Category, maxDepth int) (Category, error) {
+	defer resetDepth()
+
 	if depth >= maxDepth {
 		// break
 		return category, nil
@@ -314,8 +320,6 @@ func (category *Category) Refresh(depth int) (Category, error) {
 	}
 
 	withSubCategories, err := getChildCategories(category.clientUsed, firstCategory, depth)
-	// reset depth
-	depth = 0
 	if err != nil {
 		return Category{}, nil
 	}
