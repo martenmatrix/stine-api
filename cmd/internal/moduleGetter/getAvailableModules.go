@@ -189,7 +189,7 @@ func extractModules(doc *goquery.Document) ([]Module, error) {
 			modules = append(modules, Module{
 				Title:            title,
 				Teacher:          teacher,
-				RegistrationLink: registerLink,
+				RegistrationLink: addSTiNEPrefix(registerLink),
 				Events:           events,
 			})
 		}
