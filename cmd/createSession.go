@@ -11,14 +11,14 @@ import (
 
 // Session represent a STiNE session. Think of it like an isolated tab with STiNE open.
 type Session struct {
-	client    *http.Client // Client is an HTTP client, which is authenticated on STiNE, after successfully executing [Login]
-	sessionNo string
+	Client    *http.Client // Client is an HTTP client, which is authenticated on STiNE, if Login was successful
+	SessionNo string       // Identifier for the current session provided by STiNE, could be unique, is an empty string before Login was successful
 }
 
 // NewSession creates a new [Session] and returns it.
 func NewSession() Session {
 	return Session{
-		client: auth.GetClient(),
+		Client: auth.GetClient(),
 	}
 }
 
@@ -34,7 +34,7 @@ func (session *Session) makeSession(returnURL string, username string, password 
 		"button":                     {"login"},
 		"__RequestVerificationToken": {authToken},
 	}
-	res, resErr := session.client.PostForm(authenticationFormURL, formQuery)
+	res, resErr := session.Client.PostForm(authenticationFormURL, formQuery)
 	if resErr != nil {
 		return resErr
 	}
@@ -44,29 +44,29 @@ func (session *Session) makeSession(returnURL string, username string, password 
 		return errors.New("authentication with username/password failed")
 	}
 
-	// cnsc cookie is returned malformatted, set manually on client
+	// cnsc cookie is returned malformatted, set manually on Client
 	cnscCookie := auth.GetMalformattedCnscCookie(res)
 	authUrl, authUrlErr := url.Parse(stineURL.Url + "/scripts")
 	if authUrlErr != nil {
 		return authUrlErr
 	}
-	session.client.Jar.SetCookies(authUrl, []*http.Cookie{cnscCookie})
+	session.Client.Jar.SetCookies(authUrl, []*http.Cookie{cnscCookie})
 
 	// http library does not follow "Refresh"-Header, not in http specification
-	session.sessionNo = sessionNo.Get(res.Header.Get("Refresh"))
+	session.SessionNo = sessionNo.Get(res.Header.Get("Refresh"))
 
 	return nil
 }
 
-// Login authenticates a session on the STiNE website. If no error is returned, the user is logged in. The idsvr, idsrv.session and cnsc cookie are added to a cookie jar and the session number is retrieved from the URL.
+// Login authenticates a session on the STiNE website. If no error is returned, the user is logged in.
 func (session *Session) Login(username string, password string) error {
-	linkToAuthForm, linkToAuthFormErr := auth.GetLinkToAuthForm(auth.StartPage, session.client)
+	linkToAuthForm, linkToAuthFormErr := auth.GetLinkToAuthForm(auth.StartPage, session.Client)
 	if linkToAuthFormErr != nil {
 		return linkToAuthFormErr
 	}
 
 	// creates inital antiforgery cookie in jar
-	authFormRes, authFormResErr := session.client.Get(linkToAuthForm)
+	authFormRes, authFormResErr := session.Client.Get(linkToAuthForm)
 	if authFormResErr != nil {
 		return authFormResErr
 	}
