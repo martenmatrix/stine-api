@@ -1,4 +1,4 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package stineapi
+package moduleRegisterer
 
 import (
 	"github.com/martenmatrix/stine-api/cmd/internal/tan"
