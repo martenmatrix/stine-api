@@ -92,13 +92,9 @@ func (session *Session) Login(username string, password string) error {
 }
 
 /*
-GetCategories returns a [moduleGetter.Category] with modules currently listed under "Studying" > "Register for modules and courses".
+GetCategories returns the [moduleGetter.Category] with modules and nested categories the user can register for.
 
-The depth indicates how deep different categories are nested within a category.
-
-For instance, at a depth of 2, a structure like 'Computer Science' -> 'Elective Area' -> 'Module 1' would be displayed.
-However, a further nested structure like 'Computer Science' -> 'Elective Area' -> 'Abroad' -> 'Module 2' would not be shown,
-as it exceeds the specified depth limit.
+The depth indicates how deep different categories are nested within a category - starting at 0, which returns the initial page.
 */
 func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) {
 	registrationURL := sessionNo.Refresh("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGISTRATION&ARGUMENTS=-N000000000000000", session.SessionNo)
