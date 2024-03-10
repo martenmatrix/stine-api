@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/martenmatrix/stine-api/cmd/internal/auth"
 	"github.com/martenmatrix/stine-api/cmd/internal/moduleGetter"
+	"github.com/martenmatrix/stine-api/cmd/internal/moduleRegisterer"
 	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
 	"github.com/martenmatrix/stine-api/cmd/internal/stineURL"
 	"net/http"
@@ -91,7 +92,7 @@ func (session *Session) Login(username string, password string) error {
 }
 
 /*
-GetCategories returns a moduleGetter.Category with modules currently listed under "Studying" > "Register for modules and courses".
+GetCategories returns a [moduleGetter.Category] with modules currently listed under "Studying" > "Register for modules and courses".
 
 The depth indicates how deep different categories are nested within a category.
 
@@ -107,4 +108,11 @@ func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) 
 	}
 
 	return initialCategory, nil
+}
+
+/*
+RegisterForModule registers the current authenticated user for the passed [moduleGetter.Module]. A [moduleRegisterer.ModuleRegistration] will be returned, which provides various functions for the registration.
+*/
+func (session *Session) RegisterForModule(module moduleGetter.Module) *moduleRegisterer.ModuleRegistration {
+	return moduleRegisterer.CreateModuleRegistration(module.RegistrationLink)
 }
