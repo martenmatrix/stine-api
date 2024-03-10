@@ -6,9 +6,22 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 
 ## Table of Contents
 - [Installation](#rocket-installation)
+- [Features](#sparkles-features)
 - [Examples](#paperclip-examples)
 - [Documentation](#books-documentation)
 - [License](#scroll-license)
+
+## :sparkles: Features
+- :white_check_mark: User Auth
+- :white_check_mark: Fetch categories available for user
+- :white_check_mark: Fetch modules available for user
+- :white_check_mark: Register user for a module
+
+
+- :negative_squared_cross_mark: Fetch schedules for a user
+- :negative_squared_cross_mark: Register user for a lecture
+- :negative_squared_cross_mark: Register user for an exercise
+- :negative_squared_cross_mark: Get information about the user
 
 ## :paperclip: Examples
 Under Construction!
