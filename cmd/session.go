@@ -3,6 +3,7 @@ package stineapi
 import (
 	"errors"
 	"github.com/martenmatrix/stine-api/cmd/internal/auth"
+	"github.com/martenmatrix/stine-api/cmd/internal/moduleGetter"
 	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
 	"github.com/martenmatrix/stine-api/cmd/internal/stineURL"
 	"net/http"
@@ -87,4 +88,23 @@ func (session *Session) Login(username string, password string) error {
 	}
 
 	return nil
+}
+
+/*
+GetCategories returns a moduleGetter.Category with modules currently listed under "Studying" > "Register for modules and courses".
+
+The depth indicates how deep different categories are nested within a category.
+
+For instance, at a depth of 2, a structure like 'Computer Science' -> 'Elective Area' -> 'Module 1' would be displayed.
+However, a further nested structure like 'Computer Science' -> 'Elective Area' -> 'Abroad' -> 'Module 2' would not be shown,
+as it exceeds the specified depth limit.
+*/
+func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) {
+	registrationURL := sessionNo.Refresh("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGISTRATION&ARGUMENTS=-N000000000000000", session.SessionNo)
+	initialCategory, err := moduleGetter.GetAvailableModules(depth, registrationURL, session.Client)
+	if err != nil {
+		return moduleGetter.Category{}, err
+	}
+
+	return initialCategory, nil
 }
