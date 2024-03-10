@@ -31,7 +31,7 @@ func TestMakeSession(t *testing.T) {
 	if err != nil {
 		t.Errorf("ERROR: %s", err)
 	}
-	if session.sessionNo != "899462345432351" {
+	if session.SessionNo != "899462345432351" {
 		t.Errorf("session number was not correctly set on client")
 	}
 	if valuesPasedCorrectly == false {
