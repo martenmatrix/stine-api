@@ -2,36 +2,21 @@ package moduleRegisterer
 
 import (
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
-	"log"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
-/*
-ModuleRegistration represents a running registration for a module on the STiNE platform.
-*/
-type ModuleRegistration struct {
-	registrationLink string
-	registrationId   string // id from a hidden input field, which is returned after requesting the registrationLink
-	menuId           string // menu id represents, which option is selected on the menu to the left on the stine page
-	examDate         int
-	sessionNumber    string
-	client           *http.Client
-}
-
-func (modReg *ModuleRegistration) doRegistrationRequest(client *http.Client, reqUrl string, sessionNo string) (*http.Response, error) {
+// DoRegistrationRequest initiates the registration request on the STiNE servers
+func DoRegistrationRequest(client *http.Client, reqUrl string, sessionNo string, menuId string, registrationId string) (*http.Response, error) {
 	formQuery := url.Values{
 		"Next":      {" Weiter"},
 		"APPNAME":   {"CampusNet"},
 		"PRGNAME":   {"SAVEREGISTRATIONDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id"},
 		"sessionno": {sessionNo},
-		"menuid":    {modReg.menuId},
-		"rgtr_id":   {modReg.registrationId},
+		"menuid":    {menuId},
+		"rgtr_id":   {registrationId},
 	}
 	res, err := client.PostForm(reqUrl, formQuery)
 
@@ -41,8 +26,9 @@ func (modReg *ModuleRegistration) doRegistrationRequest(client *http.Client, req
 	return res, nil
 }
 
-// on all pages where a user is able to select an exam date, every input has a name attribute with the same id (called rb code because the id starts with RB_)
-func getRBCode(doc *goquery.Document) (string, error) {
+// GetRBCode extracts the RB-Code from sites, where user needs to select an exam date
+func GetRBCode(doc *goquery.Document) (string, error) {
+	// on all pages where a user is able to select an exam date, every input has a name attribute with the same id (called rb code because the id starts with RB_)
 	rbCode, exists := doc.Find(`input[type="radio"]`).First().Attr("name")
 	if !exists {
 		return "", errors.New("name attribute with rb code does not exist on input")
@@ -50,8 +36,9 @@ func getRBCode(doc *goquery.Document) (string, error) {
 	return rbCode, nil
 }
 
-func (modReg *ModuleRegistration) getExamMode() string {
-	switch modReg.examDate {
+// converts the selected exam to the stine exam date types
+func getExamMode(examDate int) string {
+	switch examDate {
 	case 0:
 		return " 1"
 	case 1:
@@ -62,16 +49,17 @@ func (modReg *ModuleRegistration) getExamMode() string {
 	return " 1"
 }
 
-func (modReg *ModuleRegistration) doExamRegistrationRequest(client *http.Client, reqUrl string, rbCode string, sessionNo string) (*http.Response, error) {
+// DoExamRegistrationRequest sends the exam selection to the servers, this only works after DoRegistrationRequest was executed
+func DoExamRegistrationRequest(client *http.Client, reqUrl string, rbCode string, sessionNo string, menuId string, registrationId string, examDate int) (*http.Response, error) {
 	formQuery := url.Values{
 		"Next":      {" Next"},
-		rbCode:      {modReg.getExamMode()},
+		rbCode:      {getExamMode(examDate)},
 		"APPNAME":   {"CAMPUSNET"},
 		"PRGNAME":   {"SAVEEXAMDETAILS"},
 		"ARGUMENTS": {"sessionno,menuid,rgtr_id,mode"},
 		"sessionno": {sessionNo},
-		"menuid":    {modReg.menuId},
-		"rgtr_id":   {modReg.registrationId},
+		"menuid":    {menuId},
+		"rgtr_id":   {registrationId},
 		"mode":      {"0001"},
 	}
 
@@ -84,142 +72,20 @@ func (modReg *ModuleRegistration) doExamRegistrationRequest(client *http.Client,
 	return res, nil
 }
 
-func (modReg *ModuleRegistration) getRegistrationId(client *http.Client) error {
-	res, _ := client.Get(modReg.registrationLink)
+// GetRegistrationId extracts the registrationId from the HTML, which the registrationLink links to
+func GetRegistrationId(client *http.Client, registrationLink string) (string, error) {
+	res, _ := client.Get(registrationLink)
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	regId, onPage := doc.Find(`input[name="rgtr_id"]`).First().Attr("value")
 	if !onPage {
-		return errors.New("unable to find registration id in response")
+		return "", errors.New("unable to find registration id in response")
 	}
 
-	modReg.registrationId = regId
-
-	return nil
-}
-
-func oniTANPage(doc *goquery.Document) bool {
-	return doc.Find(".itan").Length() > 0
-}
-
-func onSelectExamPage(doc *goquery.Document) bool {
-	inputValue, exists := doc.Find(`input[name="PRGNAME"]`).Attr("value")
-	if !exists {
-		log.Println("Could not evaluate, if an exam selection is required. Returning false.")
-		return false
-	}
-	return inputValue == "SAVEEXAMDETAILS"
-}
-
-func (modReg *ModuleRegistration) getTanRequiredStruct(doc *goquery.Document) *TanRequired {
-	itanStart := doc.Find(".itan").First().Text()
-
-	iTANWithLeadingZero := strings.ReplaceAll(itanStart, " ", "0")
-
-	return &TanRequired{
-		registration:  modReg,
-		TanStartsWith: iTANWithLeadingZero,
-	}
-}
-
-/*
-SetExamDate allows you to choose a specific exam date for the initial registration. If this function is not executed, the first exam date is selected by default.
-
-The exam date will not be changed, if the user is already registered for the module.
-
-0 - Selects the first exam date (default choice).
-
-1 - Selects the second exam date.
-
-2 - Opts for writing the exam in a different semester (exact date not specified).
-*/
-func (modReg *ModuleRegistration) SetExamDate(examDate int) {
-	if examDate < 0 || examDate > 2 {
-		log.Println(fmt.Sprintf("SetExamDate only accepts the integers from 1 to 2. The exam date (current value: %d) will not be changed.", modReg.examDate))
-	} else {
-		modReg.examDate = examDate
-	}
-}
-
-/*
-Register sends the registration to the STiNE servers.
-If an iTAN is required, instead of nil a [TanRequired] is returned.
-*/
-func (modReg *ModuleRegistration) Register(client *http.Client, sessionNumber string) (*TanRequired, error) {
-	modReg.client = client
-	modReg.sessionNumber = sessionNumber
-
-	var currentResponse *http.Response
-	var currentDocument *goquery.Document
-	var err error
-
-	modReg.registrationLink = sessionNo.Refresh(modReg.registrationLink, sessionNumber)
-	err = modReg.getRegistrationId(client)
-	if err != nil {
-		return nil, err
-	}
-
-	currentResponse, err = modReg.doRegistrationRequest(client, modReg.registrationLink, sessionNumber)
-	if err != nil {
-		return nil, err
-	}
-	defer currentResponse.Body.Close()
-
-	currentDocument, err = goquery.NewDocumentFromReader(currentResponse.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// only some modules require an exam registration, before the module registration can be completed
-	// for some modules the exam needs to be booked, after registering for the module
-	if onSelectExamPage(currentDocument) {
-		rbCode, rbErr := getRBCode(currentDocument)
-		if rbErr != nil {
-			return nil, rbErr
-		}
-		currentResponse, err = modReg.doExamRegistrationRequest(client, modReg.registrationLink, rbCode, sessionNumber)
-		if err != nil {
-			return nil, err
-		}
-		currentDocument, err = goquery.NewDocumentFromReader(currentResponse.Body)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if oniTANPage(currentDocument) {
-		tan := modReg.getTanRequiredStruct(currentDocument)
-		return tan, nil
-	}
-
-	return nil, nil
-}
-
-/*
-CreateModuleRegistration creates and returns a [ModuleRegistration], which provides functions to register for the specified module and its corresponding events.
-
-This function requires a registration link as an argument, which can be retrieved the following way for a specific module from the STiNE website:
-
-1. Navigate to STiNE and login.
-
-2. Navigate to the module subsection, where your module is listed (e.g. for Software Development I when studying Computer Science, go to "Studying" > "Register for modules and courses" > "Compulsory Modules Informatics")
-
-3. Your module should now be displayed with a bunch of other modules.
-
-4. There should be a red "Register" button to the right of the module name.
-
-5. Right-click the button and click "Copy link address", this is the registration link for the module!
-
-If there is no "Register" button, you've either already completed the module or you've already signed up for the module.
-*/
-func CreateModuleRegistration(registrationLink string) *ModuleRegistration {
-	return &ModuleRegistration{
-		registrationLink: registrationLink,
-		menuId:           "000309",
-	}
+	return regId, nil
 }

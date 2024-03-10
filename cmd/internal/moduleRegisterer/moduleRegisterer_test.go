@@ -4,20 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
-
-func TestCreateModuleRegistration(t *testing.T) {
-	fakeRegistrationLink := "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGCOURSEMOD&ARGUMENTS=-N232343443351119,-N343449,-N343424234011169,-ADOFF,-N343434342285453,-N344343434341730,-N0,-N0,-N0,-AN,-N0"
-	moduleReg := CreateModuleRegistration(fakeRegistrationLink)
-	if moduleReg.registrationLink != fakeRegistrationLink {
-		t.Error("registration link is not set on object")
-	}
-}
 
 func TestGetRegistrationId(t *testing.T) {
 	fakeRegistrationId := "2132134"
@@ -26,121 +17,13 @@ func TestGetRegistrationId(t *testing.T) {
 	}),
 	)
 
-	modReg := CreateModuleRegistration("https://www.example.org")
-	modReg.registrationLink = fakeServer.URL
-
-	err := modReg.getRegistrationId(&http.Client{})
+	regId, err := GetRegistrationId(&http.Client{}, fakeServer.URL)
 
 	if err != nil {
 		t.Error(err)
 	}
-	if modReg.registrationId != fakeRegistrationId {
-		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", fakeRegistrationId, modReg.registrationId))
-	}
-}
-
-func TestSetExamDate(t *testing.T) {
-	moduleReg := CreateModuleRegistration("https://www.example.org")
-
-	if moduleReg.examDate != 0 {
-		t.Error("default value for examDate should be 0")
-	}
-
-	moduleReg.SetExamDate(1)
-
-	if moduleReg.examDate != 1 {
-		t.Error("unable to change exam date")
-	}
-
-	moduleReg.SetExamDate(3)
-
-	if moduleReg.examDate == 3 {
-		t.Error("able to pass invalid arguments (>2)")
-	}
-
-	moduleReg.SetExamDate(-1)
-
-	if moduleReg.examDate == -1 {
-		t.Error("able to pass invalid arguments (<0)")
-	}
-}
-
-func TestDoRegistrationRequest(t *testing.T) {
-	var valuesPassedCorrectly bool
-	sessionNo := "1234"
-	menuId := "54321"
-	rgtrId := "232423"
-
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			t.Errorf("ERROR: %s", err)
-		}
-		valuesPassedCorrectly = r.Form.Get("Next") == " Weiter" &&
-			r.Form.Get("APPNAME") == "CampusNet" &&
-			r.Form.Get("PRGNAME") == "SAVEREGISTRATIONDETAILS" &&
-			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id" &&
-			r.Form.Get("sessionno") == sessionNo &&
-			r.Form.Get("menuid") == menuId &&
-			r.Form.Get("rgtr_id") == rgtrId
-	}),
-	)
-	defer fakeServer.Close()
-
-	reg := CreateModuleRegistration("https://stine.uni-hamburg.de/")
-	reg.menuId = menuId
-	reg.registrationId = rgtrId
-	res, err := reg.doRegistrationRequest(&http.Client{}, fakeServer.URL, sessionNo)
-	defer res.Body.Close()
-
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	if valuesPassedCorrectly == false {
-		t.Error("form request is not formatted correctly")
-	}
-}
-
-func TestGetTanRequiredStruct(t *testing.T) {
-	fakeRes, err := goquery.NewDocumentFromReader(ioutil.NopCloser(bytes.NewBufferString("<span class=\"itan\"> 40</span>")))
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	modReg := CreateModuleRegistration("x")
-	tan := modReg.getTanRequiredStruct(fakeRes)
-
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	if tan.TanStartsWith != "040" {
-		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", "040", tan.TanStartsWith))
-	}
-
-	if tan.registration.registrationLink != "x" {
-		t.Error("registration struct is not correctly copied to tanrequired struct")
-	}
-}
-
-func TestOnSelectExamPage(t *testing.T) {
-	onExamPage, errExamPage := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">`)))
-	if errExamPage != nil {
-		t.Errorf(errExamPage.Error())
-	}
-
-	notOnExamPage, errNotExamPage := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString(`<input name="PRGNAME" type="hidden">`)))
-	if errNotExamPage != nil {
-		t.Errorf(errNotExamPage.Error())
-	}
-
-	if onSelectExamPage(onExamPage) != true {
-		t.Error("should return true")
-	}
-
-	if onSelectExamPage(notOnExamPage) != false {
-		t.Error("should return false")
+	if regId != fakeRegistrationId {
+		t.Error(fmt.Sprintf("EXPECTED: %s, RECEIVED: %s", fakeRegistrationId, regId))
 	}
 }
 
@@ -153,7 +36,7 @@ func TestGetRbCode(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	rbCode, rbErr := getRBCode(rbCodeRes)
+	rbCode, rbErr := GetRBCode(rbCodeRes)
 
 	if rbErr != nil {
 		t.Errorf(rbErr.Error())
@@ -166,8 +49,6 @@ func TestGetRbCode(t *testing.T) {
 
 func TestDoExamRegistrationRequest(t *testing.T) {
 	var valuesPassedCorrectly bool
-	modReg := CreateModuleRegistration("")
-	modReg.SetExamDate(1)
 
 	formRequestMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
@@ -180,8 +61,8 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 			r.Form.Get("PRGNAME") == "SAVEEXAMDETAILS" &&
 			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode" &&
 			r.Form.Get("sessionno") == "222" &&
-			r.Form.Get("menuid") == modReg.menuId &&
-			r.Form.Get("rgtr_id") == modReg.registrationId &&
+			r.Form.Get("menuid") == "333" &&
+			r.Form.Get("rgtr_id") == "444" &&
 			r.Form.Get("mode") == "0001"
 
 		if valuesPassedCorrectly != true {
@@ -191,98 +72,9 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 	)
 	defer formRequestMock.Close()
 
-	_, err := modReg.doExamRegistrationRequest(&http.Client{}, formRequestMock.URL, "RBCODE23244", "222")
+	_, err := DoExamRegistrationRequest(&http.Client{}, formRequestMock.URL, "RBCODE23244", "222", "333", "444", 1)
 
 	if err != nil {
 		t.Errorf(err.Error())
-	}
-}
-
-func TestRegister(t *testing.T) {
-	// TODO maybe one big test is easier for refactoring instead of tests for every single function
-	var requestCounter int
-	fakeRegistrationId := "2132134"
-	rbCode := "RB_2302138093248321094"
-
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		requestCounter++
-
-		switch {
-		case requestCounter == 1:
-			// get registration id request
-			_, err := writer.Write([]byte(`<input name="rgtr_id" value="` + fakeRegistrationId + `"/>`))
-			if err != nil {
-				t.Errorf(err.Error())
-			}
-		case requestCounter == 2:
-			// check if registration id was parsed correctly from previous mocked response
-			errForm := request.ParseForm()
-			if errForm != nil {
-				t.Errorf("ERROR: %s", errForm)
-			}
-			rgtrId := request.Form.Get("rgtr_id")
-			if rgtrId != fakeRegistrationId {
-				t.Error(fmt.Sprintf("expected %s as form parameter, received %s", fakeRegistrationId, rgtrId))
-			}
-
-			// module registration request, pretending were on exam page
-			_, err := writer.Write([]byte(`
-				<input name="PRGNAME" type="hidden" value="SAVEEXAMDETAILS">
-				<input />
-				<input type="radio" class="checkBox" name="` + rbCode + `" value="  1" />
-			`))
-			if err != nil {
-				t.Errorf(err.Error())
-			}
-		case requestCounter == 3:
-			// check if rb code was parsed correctly from previous mocked response
-			errForm := request.ParseForm()
-			if errForm != nil {
-				t.Errorf("ERROR: %s", errForm)
-			}
-			rbCodeValue := request.Form.Get(rbCode)
-			if rbCodeValue != " 1" {
-				t.Error(fmt.Sprintf("tried to retrieve the value of %s and got %s", rbCode, rbCodeValue))
-			}
-
-			// tan request, pretending we need an itan auth
-			_, err := writer.Write([]byte(`
-				<span class="itan"> 54</span>
-			`))
-			if err != nil {
-				t.Errorf(err.Error())
-			}
-		case requestCounter == 4:
-			// check if itan was sent correctly
-			errForm := request.ParseForm()
-			if errForm != nil {
-				t.Errorf("ERROR: %s", errForm)
-			}
-			iTanValue := request.Form.Get("tan_code")
-			if iTanValue != "3423" {
-				t.Error(fmt.Sprintf("itan value was not parsed correctly, Expected: %s, Received: %s", "3423", iTanValue))
-			}
-		}
-	}))
-
-	modReg := CreateModuleRegistration(fakeServer.URL)
-	tanReq, err := modReg.Register(&http.Client{}, "342424")
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	if tanReq == nil {
-		t.Error("an itan is required, however no tanrequired object was returned")
-	}
-
-	// prefix of tan is 054
-	// supply tan, prefix should be removed
-	tanReqErr := tanReq.SetTan("0543423")
-	if tanReqErr != nil {
-		t.Errorf(tanReqErr.Error())
-	}
-
-	if requestCounter != 4 {
-		t.Error(fmt.Sprintf("expected 4 requests, however received %d", requestCounter))
 	}
 }
