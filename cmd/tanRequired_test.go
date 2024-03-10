@@ -1,9 +1,9 @@
-package moduleRegisterer
+package stineapi
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
+	"github.com/martenmatrix/stine-api/cmd/internal/tan"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,40 +11,17 @@ import (
 	"testing"
 )
 
-func TestOniTANPage(t *testing.T) {
-	fakeRes1, err1 := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString("<html><body></body></html>")))
-	if err1 != nil {
-		t.Errorf(err1.Error())
-	}
-
-	res1 := oniTANPage(fakeRes1)
-
-	if res1 != false {
-		t.Error("Expected: false, Received: true")
-	}
-
-	fakeRes2, err2 := goquery.NewDocumentFromReader(io.NopCloser(bytes.NewBufferString("<html><body><span class=\"itan\"</body></html>")))
-	if err2 != nil {
-		t.Errorf(err2.Error())
-	}
-	res2 := oniTANPage(fakeRes2)
-
-	if res2 != true {
-		t.Error("Expected: true, Received: false")
-	}
-}
-
 func TestRemoveTanPrefix(t *testing.T) {
 	tanReq := &TanRequired{
 		TanStartsWith: "054",
 	}
 
-	prefixLeadingZero := tanReq.removeTanPrefix("05421213")
+	prefixLeadingZero := tan.RemoveTanPrefix("05421213", tanReq.TanStartsWith)
 	if prefixLeadingZero != "21213" {
 		t.Error(fmt.Sprintf("should have removed 054 from tan, received %s", prefixLeadingZero))
 	}
 
-	prefixNormal := tanReq.removeTanPrefix("4242445324")
+	prefixNormal := tan.RemoveTanPrefix("4242445324", tanReq.TanStartsWith)
 	if prefixNormal != "4242445324" {
 		t.Error(fmt.Sprintf("nothing should have been removed from tan, however received %s", prefixNormal))
 	}
@@ -54,7 +31,7 @@ func TestCheckForTanError(t *testing.T) {
 	fakeResponse := &http.Response{
 		Body: io.NopCloser(bytes.NewBufferString(`<span class="error">a custom error msg<span>`)),
 	}
-	err := checkForTANError(fakeResponse)
+	err := tan.CheckForTANError(fakeResponse)
 
 	if err == nil {
 		t.Error("itan was sent not successfully, however no error is returned")
@@ -67,12 +44,10 @@ func TestCheckForTanError(t *testing.T) {
 
 func TestSendTan(t *testing.T) {
 	var valuesPassedCorrectly bool
-	tan := &TanRequired{
-		registration: &ModuleRegistration{
-			registrationId: "23233",
-			client:         &http.Client{},
-			sessionNumber:  "324324",
-		},
+	fakeTAN := &TanRequired{
+		client:         &http.Client{},
+		registrationId: "23233",
+		sessionNo:      "324324",
 	}
 
 	formRequestMock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +60,8 @@ func TestSendTan(t *testing.T) {
 			r.Form.Get("APPNAME") == "CampusNet" &&
 			r.Form.Get("PRGNAME") == "SAVEREGISTRATION" &&
 			r.Form.Get("ARGUMENTS") == "sessionno,menuid,rgtr_id,mode,timetable_id,location_id" &&
-			r.Form.Get("sessionno") == tan.registration.sessionNumber &&
-			r.Form.Get("rgtr_id") == tan.registration.registrationId &&
+			r.Form.Get("sessionno") == fakeTAN.sessionNo &&
+			r.Form.Get("rgtr_id") == fakeTAN.registrationId &&
 			r.Form.Get("mode") == "   0"
 
 		if valuesPassedCorrectly != true {
@@ -96,7 +71,7 @@ func TestSendTan(t *testing.T) {
 	)
 	defer formRequestMock.Close()
 
-	err := tan.sendTAN(formRequestMock.URL, "23")
+	err := tan.SendTAN(&http.Client{}, formRequestMock.URL, "23", fakeTAN.sessionNo, fakeTAN.registrationId)
 
 	if err != nil {
 		t.Errorf(err.Error())
