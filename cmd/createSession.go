@@ -12,7 +12,7 @@ import (
 // Session represent a STiNE session. Think of it like an isolated tab with STiNE open.
 type Session struct {
 	Client    *http.Client // Client is an HTTP client, which is authenticated on STiNE, if Login was successful
-	SessionNo string       // Identifier for the current session provided by STiNE, could be unique, is an empty string before Login was successful
+	SessionNo string       // Identifier for the current session provided by STiNE, could be unique, empty string prior to successful Login
 }
 
 // NewSession creates a new [Session] and returns it.
