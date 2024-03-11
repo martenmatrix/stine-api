@@ -281,7 +281,7 @@ func TestGetAvailableModules(t *testing.T) {
 				<ul>
     				<li>
         				::marker
-        				<a href="%s">Category Cool</a>
+        				<a href="%s"> Category Cool</a>
     				</li>
 				</ul>
 			`, secondCategoryPage.URL)))
