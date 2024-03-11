@@ -3,6 +3,7 @@ package stineapi
 import (
 	"errors"
 	"github.com/martenmatrix/stine-api/cmd/internal/auth"
+	"github.com/martenmatrix/stine-api/cmd/internal/language"
 	"github.com/martenmatrix/stine-api/cmd/internal/moduleGetter"
 	"github.com/martenmatrix/stine-api/cmd/internal/moduleRegisterer"
 	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
@@ -153,4 +154,29 @@ RegisterForModule registers the current authenticated user for the passed [modul
 */
 func (session *Session) RegisterForModule(module moduleGetter.Module) *moduleRegisterer.ModuleRegistration {
 	return moduleRegisterer.CreateModuleRegistration(module.RegistrationLink)
+}
+
+/*
+ChangeLanguage changes the language on the STiNE website for the current authenticated user.
+The language parameter accepts the following values:
+
+"en" - english
+
+"de" - german
+*/
+func (session *Session) ChangeLanguage(newLanguage string) error {
+	if newLanguage == "en" {
+		err := language.ChangeToEnglish(session.Client, session.SessionNo)
+		if err != nil {
+			return err
+		}
+	} else if newLanguage == "de" {
+		err := language.ChangeToGerman(session.Client, session.SessionNo)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("ChangeLanguage only accepts \"de\" or \"en\" as values")
+	}
+	return nil
 }

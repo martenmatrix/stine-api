@@ -17,6 +17,7 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 - :white_check_mark: Fetch categories available for user
 - :white_check_mark: Fetch modules available for user
 - :white_check_mark: Register user for a module
+- :white_check_mark: Change language
 ### TODOS
 - :negative_squared_cross_mark: Fetch schedules for a user
 - :negative_squared_cross_mark: Register user for a lecture
