@@ -22,6 +22,8 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 - :negative_squared_cross_mark: Register user for a lecture
 - :negative_squared_cross_mark: Register user for an exercise
 - :negative_squared_cross_mark: Get information about the user
+- :negative_squared_cross_mark: Get exam results for the user
+- :negative_squared_cross_mark: Get exam results for the user by using the mobile STiNE API Endpoint (results show up earlier)
 
 ## :paperclip: Examples
 Under Construction!
