@@ -59,7 +59,7 @@ fmt.Println(fmt.Printf("Available places: %f", vssModule.MaxCapacity))   // prin
 fmt.Println(fmt.Printf("Booked places : %f", vssModule.CurrentCapacity)) // print places already booked
 
 // Refresh everything listed under initialCategory.Categories[0]
-// Only works for categories, not modules
+// Only works on categories, all modules within a category will be refreshed
 firstCategoryRefresh, err := initialCategory.Categories[0].Refresh(0)
 if err != nil {
     // Handle error
