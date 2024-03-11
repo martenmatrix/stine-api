@@ -47,7 +47,10 @@ func (session *Session) makeSession(returnURL string, username string, password 
 	}
 
 	// cnsc cookie is returned malformatted, set manually on Client
-	cnscCookie := auth.GetMalformattedCnscCookie(res)
+	cnscCookie, cookieErr := auth.GetMalformattedCnscCookie(res)
+	if cookieErr != nil {
+		return cookieErr
+	}
 	authUrl, authUrlErr := url.Parse(stineURL.Url + "/scripts")
 	if authUrlErr != nil {
 		return authUrlErr

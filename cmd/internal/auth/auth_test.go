@@ -95,12 +95,31 @@ func TestGetMalformattedCNSCCookie(t *testing.T) {
 		},
 	}
 
-	cnscCookie := GetMalformattedCnscCookie(fakeResponse)
+	cnscCookie, err := GetMalformattedCnscCookie(fakeResponse)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 
 	if cnscCookie.Value != "DWFWDF" {
 		t.Errorf("Cookies value differs from response value")
 	}
 	if cnscCookie.Name != "cnsc" {
 		t.Errorf("Cookies name differs from response name")
+	}
+
+	// returns an error, if no authentication cookie was passed
+	fakeResponse2 := &http.Response{
+		StatusCode: 200,
+		Header: http.Header{
+			// cookie needs to be malformatted
+			"Set-Cookie": {},
+		},
+	}
+
+	_, err = GetMalformattedCnscCookie(fakeResponse2)
+
+	if err == nil {
+		t.Errorf("Function should return error, as no cnsc cookies was returned")
 	}
 }

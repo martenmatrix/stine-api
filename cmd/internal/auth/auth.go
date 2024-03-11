@@ -69,8 +69,14 @@ func GetReturnURL(authPageRes *http.Response) (string, error) {
 	return decodedStr, nil
 }
 
-func GetMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
+// GetMalformattedCnscCookie extracts a cookie, which is sent malformed by the STiNE server, which the Go Client would not parse
+func GetMalformattedCnscCookie(respWithCookie *http.Response) (*http.Cookie, error) {
 	setCookieHeader := respWithCookie.Header.Get("Set-Cookie")
+	// no auth cookie response from server => could be wrong password
+	if setCookieHeader == "" {
+		return nil, errors.New("auth failed, re-check user credentials")
+	}
+
 	keyValue := strings.Split(setCookieHeader, "=")
 	cookieWithoutName := keyValue[1]
 	cookieValueAndAttributes := strings.Split(cookieWithoutName, ";")
@@ -82,5 +88,5 @@ func GetMalformattedCnscCookie(respWithCookie *http.Response) *http.Cookie {
 		Domain:   "stine.uni-hamburg.de",
 		Path:     "/scripts",
 		HttpOnly: true,
-	}
+	}, nil
 }
