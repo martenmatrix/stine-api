@@ -36,34 +36,38 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 ### Authenticate a user
 ```go
 // Authenticate user
-session := stineapi.NewSession()
+session := NewSession()
 err := session.Login("BBB????", "password")
 
 if err != nil {
     fmt.Println("Authentication failed")
 }
 
-// session is now authenticated
+// Session is now authenticated
 fmt.Println(session.SessionNo) // returns e.g. 631332205304636
 ```
 
 ### Fetch categories and modules available for user
 ```go
-// session should be authenticated
+// Session should be authenticated
+session := NewSession()
+
 initialCategory, err := session.GetCategories(1)
 
-// print title of every category reachable from first category
+// Print title of every category reachable from first category
 for _, category := range initialCategory.Categories {
     fmt.Println(category.Title)
 }
 
 vssModule := initialCategory.Categories[0].Modules[1] // select "Distributed Systems and Systems Security (SuSe 23)" module located at second place in first listed category
 
-fmt.Println(vssModule.Title) // Distributed Systems and Systems Security (SuSe 23)
+fmt.Println(vssModule.Title)   // Distributed Systems and Systems Security (SuSe 23)
 fmt.Println(vssModule.Teacher) // Prof. Dr. Name Surname
 
-fmt.Println(fmt.Printf("Available places: %f", vssModule.MaxCapacity))   // print places available
-fmt.Println(fmt.Printf("Booked places : %f", vssModule.CurrentCapacity)) // print places already booked
+firstEvent := vssModule.Events[0]
+
+fmt.Println(fmt.Printf("Available places: %f", firstEvent.MaxCapacity))   // print places available
+fmt.Println(fmt.Printf("Booked places : %f", firstEvent.CurrentCapacity)) // print places already booked
 
 // Refresh everything listed under initialCategory.Categories[0]
 // Only works on categories, all modules within a category will be refreshed
@@ -74,6 +78,36 @@ if err != nil {
 
 // Check e.g., if places became available
 fmt.Println(firstCategoryRefresh)
+```
+
+### Register user for a module
+```go
+// Session should be authenticated
+session := NewSession()
+
+// Module ideally should be retrieved with GetCategories
+vssModule := moduleGetter.Module{}
+
+// Create module registration
+moduleRegistration := session.RegisterForModule(vssModule)
+moduleRegistration.SetExamDate(1)            // Select second available exam date
+tanReq, err := moduleRegistration.Register() // Send registration to servers
+
+if err != nil {
+    // Handle error
+}
+
+if tanReq != nil {
+    // iTAN is required for registration
+    fmt.Println(tanReq.TanStartsWith) // Print starting numbers of itan e.g. 087
+    err := tanReq.SetTan("087233233") // We can also enter the tan without prefix e.g. 233233
+    
+    if err != nil {
+        // Handle error
+    }
+}
+
+// User is registered for the module and maybe also registered for the exam, sometimes you are only able to select an exam after joining the lecture
 ```
 
 ## :rocket: Installation
