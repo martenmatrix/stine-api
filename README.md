@@ -110,6 +110,28 @@ if tanReq != nil {
 // User is registered for the module and maybe also registered for the exam, sometimes you are only able to select an exam after joining the lecture
 ```
 
+### Change Language for user
+```go
+// Session should be authenticated
+session := NewSession()
+
+err := session.ChangeLanguage("de")
+
+if err != nil {
+    // Handle error
+}
+
+// Language is set to German
+
+err = session.ChangeLanguage("en")
+
+if err != nil {
+    // Handle error
+}
+
+// Language is set to English
+```
+
 ## :rocket: Installation
 Execute the following line in your Go project:
 ```shell
