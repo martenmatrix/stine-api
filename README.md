@@ -26,7 +26,26 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 - :negative_squared_cross_mark: Get exam results for the user by using the mobile STiNE API Endpoint (results show up earlier)
 
 ## :paperclip: Examples
-Under Construction!
+### Authenticate a user
+```go
+package main
+
+import "github.com/martenmatrix/stine-api/cmd"
+import "fmt"
+
+func main() {
+	// Authenticate user
+	session := stineapi.NewSession()
+	err := session.Login("BBB????", "password")
+
+	if err != nil {
+		fmt.Println("Authentication failed")
+	}
+
+	// session is now authenticated
+	fmt.Println(session.SessionNo) // returns e.g. 631332205304636
+}
+```
 
 ## :rocket: Installation
 Execute the following line in your Go project:
