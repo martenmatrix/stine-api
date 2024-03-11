@@ -66,17 +66,6 @@ func (session *Session) makeSession(returnURL string, username string, password 
 
 /*
 Login authenticates a session on the STiNE website. If no error is returned, the user is logged in.
-
-	// Authenticate user
-	session := stineapi.NewSession()
-	err := session.Login("BBB????", "password")
-
-	if err != nil {
-		fmt.Println("Authentication failed")
-	}
-
-	// session is now authenticated
-	fmt.Println(session.SessionNo) // returns e.g. 631332205304636
 */
 func (session *Session) Login(username string, password string) error {
 	linkToAuthForm, linkToAuthFormErr := auth.GetLinkToAuthForm(auth.StartPage, session.Client)
@@ -112,32 +101,6 @@ func (session *Session) Login(username string, password string) error {
 GetCategories returns the [moduleGetter.Category] with modules and nested categories the user can register for.
 
 The depth indicates how deep different categories are nested within a category - starting at 0, which returns the initial page.
-
-	// session should be authenticated
-	initialCategory, err := session.GetCategories(1)
-
-	// print title of every category reachable from first category
-	for _, category := range initialCategory.Categories {
-		fmt.Println(category.Title)
-	}
-
-	vssModule := initialCategory.Categories[0].Modules[1] // select "Distributed Systems and Systems Security (SuSe 23)" module located at second place in first listed category
-
-	fmt.Println(vssModule.Title) // Distributed Systems and Systems Security (SuSe 23)
-	fmt.Println(vssModule.Teacher) // Prof. Dr. Name Surname
-
-	fmt.Println(fmt.Printf("Available places: %f", vssModule.MaxCapacity))   // print places available
-	fmt.Println(fmt.Printf("Booked places : %f", vssModule.CurrentCapacity)) // print places already booked
-
-	// Refresh everything listed under initialCategory.Categories[0]
-	// Only works on categories, all modules within a category will be refreshed
-	firstCategoryRefresh, err := initialCategory.Categories[0].Refresh(0)
-	if err != nil {
-		// Handle error
-	}
-
-	// Check e.g., if places became available
-	fmt.Println(firstCategoryRefresh)
 */
 func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) {
 	registrationURL := sessionNo.Refresh("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGISTRATION&ARGUMENTS=-N000000000000000", session.SessionNo)
