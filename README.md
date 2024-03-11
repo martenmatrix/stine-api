@@ -28,23 +28,45 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 ## :paperclip: Examples
 ### Authenticate a user
 ```go
-package main
+// Authenticate user
+session := stineapi.NewSession()
+err := session.Login("BBB????", "password")
 
-import "github.com/martenmatrix/stine-api/cmd"
-import "fmt"
-
-func main() {
-	// Authenticate user
-	session := stineapi.NewSession()
-	err := session.Login("BBB????", "password")
-
-	if err != nil {
-		fmt.Println("Authentication failed")
-	}
-
-	// session is now authenticated
-	fmt.Println(session.SessionNo) // returns e.g. 631332205304636
+if err != nil {
+    fmt.Println("Authentication failed")
 }
+
+// session is now authenticated
+fmt.Println(session.SessionNo) // returns e.g. 631332205304636
+```
+
+### Fetch categories and modules available for user
+```go
+// session should be authenticated
+initialCategory, err := session.GetCategories(1)
+
+// print title of every category reachable from first category
+for _, category := range initialCategory.Categories {
+    fmt.Println(category.Title)
+}
+
+vssModule := initialCategory.Categories[0].Modules[1] // select "Distributed Systems and Systems Security (SuSe 23)" module located at second place in first listed category
+
+fmt.Println(vssModule.Title) // Distributed Systems and Systems Security (SuSe 23)
+fmt.Println(vssModule.Teacher) // Prof. Dr. Name Surname
+
+fmt.Println(fmt.Printf("Available places: %f", vssModule.MaxCapacity))   // print places available
+fmt.Println(fmt.Printf("Booked places : %f", vssModule.CurrentCapacity)) // print places already booked
+
+// Refresh everything listed under initialCategory.Categories[0]
+// Only works for categories, not modules
+firstCategoryRefresh, err := initialCategory.Categories[0].Refresh(0)
+if err != nil {
+    // Handle error
+}
+
+// Check e.g., if places became available
+fmt.Println(firstCategoryRefresh)
 ```
 
 ## :rocket: Installation
