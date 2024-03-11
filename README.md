@@ -12,16 +12,20 @@ This is an unofficial STiNE API for Go. It is easy to use, completely request-ba
 - [License](#scroll-license)
 
 ## :sparkles: Features
+### Done
 - :white_check_mark: User Auth
 - :white_check_mark: Fetch categories available for user
 - :white_check_mark: Fetch modules available for user
 - :white_check_mark: Register user for a module
-
-
+### TODOS
 - :negative_squared_cross_mark: Fetch schedules for a user
 - :negative_squared_cross_mark: Register user for a lecture
 - :negative_squared_cross_mark: Register user for an exercise
 - :negative_squared_cross_mark: Get information about the user
+- :negative_squared_cross_mark: Get messages
+- :negative_squared_cross_mark: Download documents
+- :negative_squared_cross_mark: Start applications
+- :negative_squared_cross_mark: Use contact form
 - :negative_squared_cross_mark: Get exam results for the user
 - :negative_squared_cross_mark: Get exam results for the user by using the mobile STiNE API Endpoint (results show up earlier)
 
