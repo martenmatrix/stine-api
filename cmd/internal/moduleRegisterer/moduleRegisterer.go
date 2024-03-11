@@ -145,21 +145,19 @@ func (modReg *ModuleRegistration) SetExamDate(examDate int) {
 Register sends the registration to the STiNE servers.
 If an iTAN is required, instead of nil a [TanRequired] is returned.
 */
-func (modReg *ModuleRegistration) Register(client *http.Client, sessionNumber string) (*TanRequired, error) {
-	modReg.client = client
-	modReg.sessionNumber = sessionNumber
+func (modReg *ModuleRegistration) Register() (*TanRequired, error) {
 
 	var currentResponse *http.Response
 	var currentDocument *goquery.Document
 	var err error
 
-	modReg.registrationLink = sessionNo.Refresh(modReg.registrationLink, sessionNumber)
-	regId, err := getRegistrationId(client, modReg.registrationLink)
+	modReg.registrationLink = sessionNo.Refresh(modReg.registrationLink, modReg.sessionNumber)
+	regId, err := getRegistrationId(modReg.client, modReg.registrationLink)
 	if err != nil {
 		return nil, err
 	}
 
-	currentResponse, err = doRegistrationRequest(client, modReg.registrationLink, sessionNumber, modReg.menuId, regId)
+	currentResponse, err = doRegistrationRequest(modReg.client, modReg.registrationLink, modReg.sessionNumber, modReg.menuId, regId)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +175,7 @@ func (modReg *ModuleRegistration) Register(client *http.Client, sessionNumber st
 		if rbErr != nil {
 			return nil, rbErr
 		}
-		currentResponse, err = doExamRegistrationRequest(client, modReg.registrationLink, rbCode, sessionNumber, modReg.menuId, regId, modReg.ExamDate)
+		currentResponse, err = doExamRegistrationRequest(modReg.client, modReg.registrationLink, rbCode, modReg.sessionNumber, modReg.menuId, regId, modReg.ExamDate)
 		if err != nil {
 			return nil, err
 		}
@@ -200,9 +198,11 @@ CreateModuleRegistration creates and returns a [ModuleRegistration], which provi
 
 The registrationLink is the url the red "Register" button links to on the STiNE page.
 */
-func CreateModuleRegistration(registrationLink string) *ModuleRegistration {
+func CreateModuleRegistration(registrationLink string, sessionNumber string, client *http.Client) *ModuleRegistration {
 	return &ModuleRegistration{
 		registrationLink: registrationLink,
+		sessionNumber:    sessionNumber,
+		client:           client,
 		menuId:           "000309",
 	}
 }

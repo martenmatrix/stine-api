@@ -82,14 +82,14 @@ func TestDoExamRegistrationRequest(t *testing.T) {
 
 func TestCreateModuleRegistration(t *testing.T) {
 	fakeRegistrationLink := "https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGCOURSEMOD&ARGUMENTS=-N232343443351119,-N343449,-N343424234011169,-ADOFF,-N343434342285453,-N344343434341730,-N0,-N0,-N0,-AN,-N0"
-	moduleReg := CreateModuleRegistration(fakeRegistrationLink)
+	moduleReg := CreateModuleRegistration(fakeRegistrationLink, "232323", &http.Client{})
 	if moduleReg.registrationLink != fakeRegistrationLink {
 		t.Error("registration link is not set on object")
 	}
 }
 
 func TestSetExamDate(t *testing.T) {
-	moduleReg := CreateModuleRegistration("https://www.example.org")
+	moduleReg := CreateModuleRegistration("https://www.example.org", "232323", &http.Client{})
 
 	if moduleReg.ExamDate != 0 {
 		t.Error("default value for examDate should be 0")
@@ -136,7 +136,7 @@ func TestDoRegistrationRequest(t *testing.T) {
 	)
 	defer fakeServer.Close()
 
-	reg := CreateModuleRegistration("https://stine.uni-hamburg.de/")
+	reg := CreateModuleRegistration("https://stine.uni-hamburg.de/", "232323", &http.Client{})
 	reg.menuId = menuId
 	reg.registrationId = rgtrId
 	res, err := doRegistrationRequest(&http.Client{}, fakeServer.URL, sessionNo, menuId, rgtrId)
@@ -157,7 +157,7 @@ func TestGetTanRequiredStruct(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	modReg := CreateModuleRegistration("x")
+	modReg := CreateModuleRegistration("x", "232323", &http.Client{})
 	tan := modReg.getTanRequiredStruct(fakeRes)
 
 	if err != nil {
@@ -240,8 +240,8 @@ func TestRegister(t *testing.T) {
 		}
 	}))
 
-	modReg := CreateModuleRegistration(fakeServer.URL)
-	tanReq, err := modReg.Register(&http.Client{}, "342424")
+	modReg := CreateModuleRegistration(fakeServer.URL, "342424", &http.Client{})
+	tanReq, err := modReg.Register()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
