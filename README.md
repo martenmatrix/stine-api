@@ -29,7 +29,7 @@ Under Construction!
 ## :rocket: Installation
 Execute the following line in your Go project:
 ```shell
-go get github.com/martenmatrix/stine-api/cmd
+GOPROXY=direct go get github.com/martenmatrix/stine-api/cmd
 ```
 and import it with
 ```go
