@@ -14,7 +14,7 @@ type TanRequired struct {
 	sessionNo      string       // sessionNo of the authenticated client
 	url            string       // url the itan should be sent to
 	registrationId string
-	TanStartsWith  string // The numbers the required iTAN starts with
+	TanStartsWith  string // The numbers the required iTAN starts with, contains leading zero
 }
 
 /*
