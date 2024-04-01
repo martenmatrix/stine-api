@@ -1,4 +1,4 @@
-package moduleGetter
+package stineapi
 
 import (
 	"fmt"
@@ -288,7 +288,7 @@ The registerURL represents the URL, which re-directs to "Studying" > "Register f
 
 The client is the HTTP Client the requests should be executed with.
 */
-func GetAvailableModules(depth int, registerURL string, client *http.Client) (Category, error) {
+func getAvailableModules(depth int, registerURL string, client *http.Client) (Category, error) {
 	// handle first page
 	firstCategory, firstCatErr := getCategory(client, "initial", registerURL)
 	if firstCatErr != nil {

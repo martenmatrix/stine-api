@@ -4,8 +4,6 @@ import (
 	"errors"
 	"github.com/martenmatrix/stine-api/cmd/internal/auth"
 	"github.com/martenmatrix/stine-api/cmd/internal/language"
-	"github.com/martenmatrix/stine-api/cmd/internal/moduleGetter"
-	"github.com/martenmatrix/stine-api/cmd/internal/moduleRegisterer"
 	"github.com/martenmatrix/stine-api/cmd/internal/sessionNo"
 	"github.com/martenmatrix/stine-api/cmd/internal/stineURL"
 	"net/http"
@@ -102,11 +100,11 @@ GetCategories returns the [moduleGetter.Category] with modules and nested catego
 
 The depth indicates how deep different categories are nested within a category - starting at 0, which returns the initial page.
 */
-func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) {
+func (session *Session) GetCategories(depth int) (Category, error) {
 	registrationURL := sessionNo.Refresh("https://stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=REGISTRATION&ARGUMENTS=-N000000000000000", session.SessionNo)
-	initialCategory, err := moduleGetter.GetAvailableModules(depth, registrationURL, session.Client)
+	initialCategory, err := getAvailableModules(depth, registrationURL, session.Client)
 	if err != nil {
-		return moduleGetter.Category{}, err
+		return Category{}, err
 	}
 
 	return initialCategory, nil
@@ -115,8 +113,8 @@ func (session *Session) GetCategories(depth int) (moduleGetter.Category, error) 
 /*
 RegisterForModule registers the current authenticated user for the passed [moduleGetter.Module]. A [moduleRegisterer.ModuleRegistration] will be returned, which provides various functions for the registration.
 */
-func (session *Session) RegisterForModule(module moduleGetter.Module) *moduleRegisterer.ModuleRegistration {
-	return moduleRegisterer.CreateModuleRegistration(module.RegistrationLink, session.SessionNo, session.Client)
+func (session *Session) RegisterForModule(module Module) *ModuleRegistration {
+	return CreateModuleRegistration(module.RegistrationLink, session.SessionNo, session.Client)
 }
 
 /*

@@ -1,4 +1,4 @@
-package moduleGetter
+package stineapi
 
 import (
 	"fmt"
@@ -290,7 +290,7 @@ func TestGetAvailableModules(t *testing.T) {
 		}
 	}))
 
-	modules, err := GetAvailableModules(1, firstCategoryPage.URL, &http.Client{})
+	modules, err := getAvailableModules(1, firstCategoryPage.URL, &http.Client{})
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -490,7 +490,7 @@ func TestRefreshModule(t *testing.T) {
 		}
 	}))
 
-	modules, err := GetAvailableModules(1, firstCategoryPage.URL, &http.Client{})
+	modules, err := getAvailableModules(1, firstCategoryPage.URL, &http.Client{})
 
 	if err != nil {
 		t.Errorf(err.Error())

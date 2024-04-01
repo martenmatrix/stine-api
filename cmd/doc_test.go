@@ -2,7 +2,6 @@ package stineapi
 
 import (
 	"fmt"
-	"github.com/martenmatrix/stine-api/cmd/internal/moduleGetter"
 )
 
 func ExampleSession_Login() {
@@ -55,7 +54,7 @@ func ExampleSession_RegisterForModule() {
 	session := NewSession()
 
 	// Module ideally should be retrieved with GetCategories
-	vssModule := moduleGetter.Module{}
+	vssModule := Module{}
 
 	// Create module registration
 	moduleRegistration := session.RegisterForModule(vssModule)
