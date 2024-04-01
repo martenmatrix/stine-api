@@ -143,7 +143,7 @@ import "github.com/martenmatrix/stine-api/cmd"
 ```
 
 ## :books: Documentation
-The documentation can be found [here](https://pkg.go.dev/github.com/martenmatrix/stine-api/cmd).
+The documentation can be found [here](https://pkg.go.dev/github.com/martenmatrix/stine-api/cmd) or you can generate it on your local computer with `godoc -http=:6060`.
 
 ## :scroll: License
 [MIT](./LICENSE)
