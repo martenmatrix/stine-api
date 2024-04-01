@@ -238,7 +238,7 @@ func TestGetAvailableModules(t *testing.T) {
 				
 				
 					<td class="tbdata dl-inner">
-						<p><strong><a href="/scripts/cfefef3" name="eventLink">64-091 <span class="eventTitle">Exercises Distributed Systems and Systems Security </span></a></strong></p>
+						<p><strong><a href="/scripts/cfefef3" name="eventLink">64-091a <span class="eventTitle">Exercises Distributed Systems and Systems Security </span></a></strong></p>
 						<p>Markus Ruehl</p>
 						<p></p>
 					</td>
@@ -344,7 +344,7 @@ func TestGetAvailableModules(t *testing.T) {
 					RegistrationLink: "", // should be empty, as simulated user is already registered
 					Events: []Event{
 						{
-							Id:              "64-091",
+							Id:              "64-091a",
 							Title:           "Exercises Distributed Systems and Systems Security",
 							Link:            stineURL.Url + "/scripts/cfefef3",
 							MaxCapacity:     math.Inf(1),

@@ -88,7 +88,9 @@ func isEvent(eventSelection *goquery.Selection) bool {
 func extractEvent(eventSelection *goquery.Selection) (Event, error) {
 	paragraphs := eventSelection.Find("p")
 
-	id := paragraphs.Find("a[name='eventLink']").Text()[0:6]
+	regexForId := regexp.MustCompile("\\d{2}-\\d{3}\\w?")
+	idText := paragraphs.Find("a[name='eventLink']").Text()
+	id := regexForId.FindStringSubmatch(idText)[0]
 
 	title := paragraphs.Find(".eventTitle").Text()
 	// something unnecessary whitespace is added in the title at the start or end, remove
