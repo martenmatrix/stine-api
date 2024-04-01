@@ -198,7 +198,7 @@ CreateModuleRegistration creates and returns a [ModuleRegistration], which provi
 
 The registrationLink is the url the red "Register" button links to on the STiNE page.
 */
-func CreateModuleRegistration(registrationLink string, sessionNumber string, client *http.Client) *ModuleRegistration {
+func createModuleRegistration(registrationLink string, sessionNumber string, client *http.Client) *ModuleRegistration {
 	return &ModuleRegistration{
 		registrationLink: registrationLink,
 		sessionNumber:    sessionNumber,

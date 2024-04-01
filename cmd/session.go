@@ -114,7 +114,7 @@ func (session *Session) GetCategories(depth int) (Category, error) {
 RegisterForModule registers the current authenticated user for the passed [moduleGetter.Module]. A [moduleRegisterer.ModuleRegistration] will be returned, which provides various functions for the registration.
 */
 func (session *Session) RegisterForModule(module Module) *ModuleRegistration {
-	return CreateModuleRegistration(module.RegistrationLink, session.SessionNo, session.Client)
+	return createModuleRegistration(module.RegistrationLink, session.SessionNo, session.Client)
 }
 
 /*
