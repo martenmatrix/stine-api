@@ -1,4 +1,4 @@
-<img alt="STiNE Logo" height="100" src="./stine_logo.png"/>
+<img alt="STiNE Logo" height="100" src="https://raw.githubusercontent.com/martenmatrix/stine-api/main/stine_logo.png"/>
 
 > :warning: This project is far from stable and may contain many bugs and cause unexpected behavior.
 
